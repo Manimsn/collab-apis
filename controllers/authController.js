@@ -48,13 +48,13 @@ export const handleLogin = async (req, res, next) => {
     const accessToken = jwt.sign(
       { UserInfo: { userId: foundUser._id, roles, session: Date.now() } },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "15m" }
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "10s" }
     );
 
     const newRefreshToken = jwt.sign(
       { userId: foundUser._id },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d" }
+      { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "10s" }
     );
 
     // Manage refresh tokens array
