@@ -40,18 +40,21 @@ export const handleRefreshToken = async (req, res, next) => {
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
         async (err, decoded) => {
-          if (err) return res.sendStatus(403); // Forbidden
+          if (err) {
+            console.log("Invalid refresh token signature.");
+            return res.sendStatus(403); // Forbidden
+          }
 
           console.log("Detected refresh token reuse.");
           const hackedUser = await User.findOne({ _id: decoded.userId }).exec();
           if (hackedUser) {
             hackedUser.refreshTokens = [];
-            const result = await hackedUser.save();
-            console.log(result);
+            await hackedUser.save();
           }
+          return res.sendStatus(403); // Forbidden
         }
       );
-      return res.sendStatus(403); // Forbidden
+      return; // Prevent further execution
     }
 
     // Remove the used refresh token from the user's array
@@ -67,30 +70,26 @@ export const handleRefreshToken = async (req, res, next) => {
         if (err) {
           console.log("Expired refresh token.");
           foundUser.refreshTokens = [...newRefreshTokenArray]; // Remove the expired token
-          const result = await foundUser.save();
-          console.log(result);
+          await foundUser.save();
           return res.status(403).json({ message: "Forbidden: Token expired." });
         }
-        console.log("Expired refresh token.");
+
         // Validate the decoded user ID
         if (decoded.userId !== String(foundUser._id)) {
           return res.status(403).json({ message: "Forbidden: Invalid token." });
         }
 
-        // Generate new access token
-        // const roles = Object.values(foundUser.roles || {});
+        // Generate new tokens
         const accessToken = jwt.sign(
           {
             UserInfo: {
               userId: foundUser._id,
-              //   roles,
             },
           },
           process.env.ACCESS_TOKEN_SECRET,
           { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "10s" }
         );
 
-        // Generate a new refresh token
         const newRefreshToken = jwt.sign(
           { userId: foundUser._id },
           process.env.REFRESH_TOKEN_SECRET,
