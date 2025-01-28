@@ -7,6 +7,7 @@ import registerRoutes from "./routes/register.js"; // Use ESM import
 import authRoutes from "./routes/auth.js"; // Use ESM import
 import refreshRoutes from "./routes/refresh.js"; // Use ESM import
 import logoutRoutes from "./routes/logout.js"; // Use ESM import
+import resetPasswordRoutes from "./routes/reset-password.js"; // Use ESM import
 import errorHandler from "./middlewares/errorHandler.js"; // Use ESM import
 
 dotenv.config(); // Load environment variables
@@ -24,6 +25,7 @@ app.use("/register", registerRoutes);
 app.use("/auth", authRoutes);
 app.use("/refresh", refreshRoutes);
 app.use("/logout", logoutRoutes);
+app.use("/resetpassword", resetPasswordRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
