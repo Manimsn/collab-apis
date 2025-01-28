@@ -33,7 +33,6 @@ export const handleRefreshToken = async (req, res, next) => {
     const foundUser = await User.findOne({
       refreshTokens: refreshToken,
     }).exec();
-    console.log("foundUser", foundUser);
 
     // Handle refresh token reuse or invalid token
     if (!foundUser) {
@@ -42,16 +41,18 @@ export const handleRefreshToken = async (req, res, next) => {
         process.env.REFRESH_TOKEN_SECRET,
         async (err, decoded) => {
           if (err) {
-            console.log("Invalid refresh token signature.");
-            return res.sendStatus(403); // Forbidden
+            // console.log("JWT Verification Error:", err.message); // Log error
+            return res
+              .status(403)
+              .json({ message: "Forbidden: Invalid token." }); // Ensure response
           }
 
-          console.log("Detected refresh token reuse.");
           const hackedUser = await User.findOne({ _id: decoded.userId }).exec();
-          console.log("Detected refresh token reuse.-hackedUser", hackedUser);
+
           if (hackedUser) {
             hackedUser.refreshTokens = [];
             await hackedUser.save();
+            // console.log("All refresh tokens cleared for hacked user.");
           }
           return res.sendStatus(403); // Forbidden
         }
@@ -70,14 +71,13 @@ export const handleRefreshToken = async (req, res, next) => {
       process.env.REFRESH_TOKEN_SECRET,
       async (err, decoded) => {
         if (err) {
-          console.log("Expired refresh token.");
           foundUser.refreshTokens = [...newRefreshTokenArray]; // Remove the expired token
           await foundUser.save();
           return res.status(403).json({ message: "Forbidden: Token expired." });
         }
 
         // Validate the decoded user ID
-        if (decoded.userId !== String(foundUser._id)) {
+        if (decoded.userId !== foundUser._id.toString()) {
           return res.status(403).json({ message: "Forbidden: Invalid token." });
         }
 
