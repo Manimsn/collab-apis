@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser"; // Import cookie-parser
 import registerRoutes from "./routes/register.js"; // Use ESM import
 import authRoutes from "./routes/auth.js"; // Use ESM import
 import refreshRoutes from "./routes/refresh.js"; // Use ESM import
+import logoutRoutes from "./routes/logout.js"; // Use ESM import
 import errorHandler from "./middlewares/errorHandler.js"; // Use ESM import
 
 dotenv.config(); // Load environment variables
@@ -22,6 +23,7 @@ app.use(express.json()); // Parse JSON request bodies
 app.use("/register", registerRoutes);
 app.use("/auth", authRoutes);
 app.use("/refresh", refreshRoutes);
+app.use("/logout", logoutRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
