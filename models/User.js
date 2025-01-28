@@ -14,6 +14,7 @@ const UserSchema = new mongoose.Schema({
   balanceCredits: { type: Number, default: 0 },
   downloadedModels: { type: [Object], default: [] },
   refreshTokens: { type: [String], default: [] },
+  passwordHistory: { type: [String], default: [] },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
