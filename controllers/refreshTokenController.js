@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// Steps to reproduce:
-// 	1. set the refresh token expiry to 10 seconds
+// Steps to reproduce: Reusing the valid token
+// 	1. set the refresh token expiry to 1d not 10 seconds because if token expired it will be behave as invalid signature instead of hacked user detection
 // 	2. Login in browser with react UI and go to admin page
 // 	3. copy the token ->	grab the jwt token (refresh token) from inpect->application->cookies->jwt (which will not be accessible by javascript)
 // 	4. now again go to home and come to admin page and see the jwt will be refresh and new one will be there so exisitn becomes invalid
@@ -33,6 +33,7 @@ export const handleRefreshToken = async (req, res, next) => {
     const foundUser = await User.findOne({
       refreshTokens: refreshToken,
     }).exec();
+    console.log("foundUser", foundUser);
 
     // Handle refresh token reuse or invalid token
     if (!foundUser) {
@@ -47,6 +48,7 @@ export const handleRefreshToken = async (req, res, next) => {
 
           console.log("Detected refresh token reuse.");
           const hackedUser = await User.findOne({ _id: decoded.userId }).exec();
+          console.log("Detected refresh token reuse.-hackedUser", hackedUser);
           if (hackedUser) {
             hackedUser.refreshTokens = [];
             await hackedUser.save();
