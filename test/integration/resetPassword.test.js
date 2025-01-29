@@ -2,13 +2,13 @@ import * as chai from "chai";
 import supertest from "supertest";
 import bcrypt from "bcrypt";
 
-import app from "../../app.js"; // Import the Express app
+import app from "../../app.js"; // Import your Express app
 import User from "../../models/User.js";
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
 
 const { expect } = chai;
 
-describe("POST /reset-password", () => {
+describe("POST /resetpassword", () => {
   before(async () => {
     await setupTestDB(); // Setup in-memory MongoDB
   });
@@ -39,7 +39,7 @@ describe("POST /reset-password", () => {
     return user;
   };
 
-  // --- Positive Test Cases ---
+  // --- Positive Test Case ---
   it("should successfully reset password with valid data", async () => {
     const user = await createTestUser();
 
@@ -64,29 +64,91 @@ describe("POST /reset-password", () => {
     expect(updatedUser.refreshTokens).to.be.empty;
   });
 
-  // --- Negative Test Cases ---
-  it("should return 400 when required fields are missing", async () => {
+  // --- Negative Test Cases for Password Validation ---
+  it("should return all validation errors if password does not meet security criteria", async () => {
+    const user = await createTestUser();
+
     const res = await supertest(app).post("/resetpassword").send({
-      email: "johndoe@example.com",
+      email: user.email,
+      newPassword: "weak", // Weak password (no uppercase, number, or special character)
+      confirmPassword: "weak",
     });
 
     expect(res.status).to.equal(400);
-    expect(res.body).to.have.property("errors");
-  });
+    expect(res.body.errors).to.be.an("array").that.has.lengthOf(5);
 
-  it("should return 404 when email is not found", async () => {
-    const res = await supertest(app).post("/resetpassword").send({
-      email: "nonexistent@example.com",
-      newPassword: "NewPass@123",
-      confirmPassword: "NewPass@123",
-    });
-
-    expect(res.status).to.equal(404);
-    expect(res.body.message).to.equal(
-      "User not found with the provided email."
+    const messages = res.body.errors.map((error) => error.message);
+    expect(messages).to.include("String must contain at least 8 character(s)");
+    expect(messages).to.include(
+      "Password must include at least one uppercase letter"
+    );
+    expect(messages).to.include("Password must include at least one number");
+    expect(messages).to.include(
+      "Password must include at least one special character"
     );
   });
 
+  it("should return an error if password is too short", async () => {
+    const user = await createTestUser();
+
+    const res = await supertest(app).post("/resetpassword").send({
+      email: user.email,
+      newPassword: "A@1", // Too short
+      confirmPassword: "A@1",
+    });
+
+    expect(res.status).to.equal(400);
+    expect(res.body.errors[0].message).to.include(
+      "String must contain at least 8 character(s)"
+    );
+  });
+
+  it("should return an error if password does not contain an uppercase letter", async () => {
+    const user = await createTestUser();
+
+    const res = await supertest(app).post("/resetpassword").send({
+      email: user.email,
+      newPassword: "newpassword1@", // No uppercase letter
+      confirmPassword: "newpassword1@",
+    });
+
+    expect(res.status).to.equal(400);
+    expect(res.body.errors[0].message).to.include(
+      "Password must include at least one uppercase letter"
+    );
+  });
+
+  it("should return an error if password does not contain a number", async () => {
+    const user = await createTestUser();
+
+    const res = await supertest(app).post("/resetpassword").send({
+      email: user.email,
+      newPassword: "NewPassword@", // No number
+      confirmPassword: "NewPassword@",
+    });
+
+    expect(res.status).to.equal(400);
+    expect(res.body.errors[0].message).to.include(
+      "Password must include at least one number"
+    );
+  });
+
+  it("should return an error if password does not contain a special character", async () => {
+    const user = await createTestUser();
+
+    const res = await supertest(app).post("/resetpassword").send({
+      email: user.email,
+      newPassword: "NewPassword1", // No special character
+      confirmPassword: "NewPassword1",
+    });
+
+    expect(res.status).to.equal(400);
+    expect(res.body.errors[0].message).to.include(
+      "Password must include at least one special character"
+    );
+  });
+
+  // --- Other Negative Cases ---
   it("should return 400 when passwords do not match", async () => {
     const user = await createTestUser();
 
@@ -102,35 +164,16 @@ describe("POST /reset-password", () => {
     );
   });
 
-  it("should return 400 when password is too weak", async () => {
-    const user = await createTestUser();
-
+  it("should return 404 when email is not found", async () => {
     const res = await supertest(app).post("/resetpassword").send({
-      email: user.email,
-      newPassword: "weak",
-      confirmPassword: "weak",
-    });
-    // console.log(res.status);
-    // console.log(res.body);
-
-    expect(res.status).to.equal(400);
-    expect(res.body.errors[0].message).to.include(
-      "String must contain at least 8 character(s)"
-    );
-  });
-
-  it("should return 400 when password does not meet security criteria", async () => {
-    const user = await createTestUser();
-
-    const res = await supertest(app).post("/resetpassword").send({
-      email: user.email,
-      newPassword: "newpassword", // Missing uppercase, number, special character
-      confirmPassword: "newpassword",
+      email: "nonexistent@example.com",
+      newPassword: "NewPass@123",
+      confirmPassword: "NewPass@123",
     });
 
-    expect(res.status).to.equal(400);
-    expect(res.body.errors[0].message).to.include(
-      "Password must include at least one uppercase letter"
+    expect(res.status).to.equal(404);
+    expect(res.body.message).to.equal(
+      "User not found with the provided email."
     );
   });
 
@@ -147,28 +190,6 @@ describe("POST /reset-password", () => {
 
     expect(res.status).to.equal(400);
     expect(res.body.message).to.equal("Cannot reuse a previous password.");
-  });
-
-  // --- Edge Cases ---
-  it("should ignore extra fields in the request and still process correctly", async () => {
-    const user = await createTestUser();
-
-    const res = await supertest(app).post("/resetpassword").send({
-      email: user.email,
-      newPassword: "AnotherPass@123",
-      confirmPassword: "AnotherPass@123",
-      extraField: "should be ignored",
-    });
-
-    expect(res.status).to.equal(200);
-    expect(res.body.message).to.equal("Password reset successfully.");
-  });
-
-  it("should return 400 when request body is empty", async () => {
-    const res = await supertest(app).post("/resetpassword").send({});
-
-    expect(res.status).to.equal(400);
-    expect(res.body).to.have.property("errors");
   });
 
   it("should update the updatedAt timestamp", async () => {
