@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const sharp = require("sharp");
 
 const s3 = new AWS.S3();
 
@@ -16,24 +17,19 @@ exports.handler = async (event) => {
       record.s3.object.key.replace(/\+/g, " ")
     );
 
-    // Ensure it's a PDF file
     if (!objectKey.endsWith(".pdf")) {
       console.log(`⚠️ Skipping non-PDF file: ${objectKey}`);
       return;
     }
 
-    // Define file paths
-    // const filePath = `/tmp/${path.basename(objectKey)}`;
-    // const outputPath = `/tmp/${path.basename(objectKey, ".pdf")}.jpg`;
-    // const filePath = `/tmp/input.pdf`; // Always use a safe name
-    // const outputPath = `/tmp/output.jpg`; // Always use a safe name
-    // ✅ Extract a safe filename (to be used later for uploading)
-    const originalFilename = path.basename(objectKey, ".pdf"); // Get name without .pdf
-    const sanitizedFilename = originalFilename.replace(/[^\w\s.-]/g, ""); // Remove special characters
+    // ✅ Extract a safe filename
+    const originalFilename = path.basename(objectKey, ".pdf"); // Remove .pdf
+    const sanitizedFilename = originalFilename.replace(/[^\w\s.-]/g, ""); // Remove special chars
 
-    // ✅ Normalize file paths (Use fixed names for processing)
-    const filePath = `/tmp/input.pdf`; // Temporary fixed name for processing
-    const outputPath = `/tmp/output.jpg`; // Temporary fixed name for output
+    // ✅ Define temporary paths
+    const filePath = `/tmp/input.pdf`;
+    const outputPath = `/tmp/output.jpg`; // Extracted first-page image
+    const croppedPath = `/tmp/cropped.jpg`; // Top-section image
 
     // ✅ Step 1: Download PDF from S3
     console.log(`📥 Downloading ${objectKey} from ${bucketName}`);
@@ -42,36 +38,54 @@ exports.handler = async (event) => {
     fs.writeFileSync(filePath, data.Body);
 
     // ✅ Step 2: Convert first page of PDF to an image using Ghostscript
-    // console.log("🖼️ Generating Thumbnail using Ghostscript...");
-    // execSync(`/opt/bin/gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=jpeg -r150 -dFirstPage=1 -dLastPage=1 -sOutputFile=${outputPath} ${filePath}`);
-
-    // ✅ Step 2: Convert first page of PDF to an image using Ghostscript
-    console.log("🖼️ Generating Thumbnail using Ghostscript...");
+    console.log("🖼️ Extracting first page using Ghostscript...");
     execSync(
       `/opt/bin/gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=jpeg -r150 -dFirstPage=1 -dLastPage=1 -sOutputFile=${outputPath} ${filePath}`
     );
 
-    // ✅ Step 3: Rename the processed output file to its original name
-    const finalOutputPath = `/tmp/${sanitizedFilename}.jpg`; // Rename the output file
-    fs.renameSync(outputPath, finalOutputPath);
+    // ✅ Step 3: Crop the top 40% of the image
+    console.log("📏 Cropping top section...");
+    const { width, height } = await sharp(outputPath).metadata();
+    const cropHeight = Math.floor(height * 0.4); // Extract only the top 40%
 
-    // ✅ Step 3: Upload the Thumbnail to S3
-    const thumbnailBucket = bucketName;
-    // const thumbnailKey = `thumbnails/${path.basename(outputPath)}`;
-    const thumbnailKey = `thumbnails/${sanitizedFilename}.jpg`; // Keep original filename
+    await sharp(outputPath)
+      .extract({ left: 0, top: 0, width: width, height: cropHeight }) // Crop top part
+      .toFile(croppedPath);
 
-    console.log(`🚀 Uploading Thumbnail to ${thumbnailBucket}/${thumbnailKey}`);
-    await s3
-      .putObject({
-        Bucket: thumbnailBucket,
-        Key: thumbnailKey,
-        Body: fs.readFileSync(finalOutputPath),
-        ContentType: "image/jpeg",
+    // ✅ Step 4: Resize for Different Screens
+    const sizes = [
+      { name: "800x440", width: 800, height: 440 },
+      { name: "315x195", width: 315, height: 195 },
+      { name: "256x144", width: 256, height: 144 },
+    ];
+
+    const uploadToS3 = async (filePath, sizeLabel) => {
+      const thumbnailKey = `thumbnails/${sanitizedFilename}_${sizeLabel}.webp`;
+      console.log(`🚀 Uploading Thumbnail to ${bucketName}/${thumbnailKey}`);
+      await s3
+        .putObject({
+          Bucket: bucketName,
+          Key: thumbnailKey,
+          Body: fs.readFileSync(filePath),
+          ContentType: "image/webp",
+        })
+        .promise();
+    };
+
+    await Promise.all(
+      sizes.map(async ({ name, width, height }) => {
+        const resizedPath = `/tmp/${sanitizedFilename}_${name}.webp`;
+
+        await sharp(croppedPath)
+          .resize(width, height, { fit: "cover" }) // Crop to fit
+          .toFile(resizedPath);
+
+        await uploadToS3(resizedPath, name);
       })
-      .promise();
+    );
 
     console.log("✅ Thumbnail Generation Complete!");
-    return { statusCode: 200, body: "PDF Thumbnail Created Successfully!" };
+    return { statusCode: 200, body: "PDF Thumbnails Created Successfully!" };
   } catch (error) {
     console.error("❌ Error Processing PDF:", error);
     return { statusCode: 500, body: `Error: ${error.message}` };
