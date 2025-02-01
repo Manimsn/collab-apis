@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const ProjectSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true }, // 🔹 Enforce unique constraint
+  name: { type: String, required: true, unique: true }, // Ensure unique project name
   description: { type: String },
   location: { type: String, required: true },
   createdBy: {
@@ -13,7 +13,7 @@ const ProjectSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-// 🔹 Create a unique index for `name`
+// 🔹 Ensure unique index is created properly
 ProjectSchema.index({ name: 1 }, { unique: true });
 
 const Project = mongoose.model("Project", ProjectSchema);
