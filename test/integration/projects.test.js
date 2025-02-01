@@ -62,9 +62,7 @@ describe("POST /projects", () => {
 
     expect(res.status).to.equal(400);
     expect(res.body.message).to.equal("Validation failed");
-    expect(res.body.errors.name._errors[0]).to.equal(
-      "Project name must be at least 3 characters long"
-    );
+    expect(res.body.errors.name._errors).to.include("Required");
   });
 
   it("should return 400 if project location is missing", async () => {
@@ -78,9 +76,7 @@ describe("POST /projects", () => {
 
     expect(res.status).to.equal(400);
     expect(res.body.message).to.equal("Validation failed");
-    expect(res.body.errors.location._errors[0]).to.equal(
-      "Location must be at least 3 characters long"
-    );
+    expect(res.body.errors.location._errors).to.include("Required");
   });
 
   it("should return 400 if project name is too short", async () => {
@@ -185,5 +181,39 @@ describe("POST /projects", () => {
 
     expect(res.status).to.equal(403);
     expect(res.body.message).to.equal("Invalid or expired token");
+  });
+
+  it("should return 400 if project name and location are missing", async () => {
+    const res = await supertest(app)
+      .post("/projects")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+        description: "Test project",
+      });
+
+    expect(res.status).to.equal(400);
+    expect(res.body.message).to.equal("Validation failed");
+    expect(res.body.errors.name._errors).to.include("Required");
+    expect(res.body.errors.location._errors).to.include("Required");
+  });
+
+  it("should return 400 if project name and location are too short", async () => {
+    const res = await supertest(app)
+      .post("/projects")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+        name: "AB",
+        description: "Test project",
+        location: "NY",
+      });
+
+    expect(res.status).to.equal(400);
+    expect(res.body.message).to.equal("Validation failed");
+    expect(res.body.errors.name._errors).to.include(
+      "Project name must be at least 3 characters long"
+    );
+    expect(res.body.errors.location._errors).to.include(
+      "Location must be at least 3 characters long"
+    );
   });
 });
