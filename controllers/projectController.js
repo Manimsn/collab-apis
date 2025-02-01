@@ -1,7 +1,7 @@
 import { z } from "zod";
 import Project from "../models/Project.js";
 
-// Define Zod schema for project validation
+// Define Zod schema for validation
 const projectSchema = z.object({
   name: z.string().min(3, "Project name must be at least 3 characters long"),
   description: z.string().optional(),
@@ -19,10 +19,19 @@ export const createProject = async (req, res) => {
         errors: validatedData.error.format(),
       });
     }
-
     const userId = req.user.userId; // Extract userId from token
 
-    // ✅ Create new project (only if validation passes)
+    // ✅ Check if the project name already exists
+    const existingProject = await Project.findOne({
+      name: validatedData.data.name,
+    });
+    if (existingProject) {
+      return res.status(400).json({
+        message: "Project name already exists. Please choose a different name.",
+      });
+    }
+
+    // ✅ Create new project
     const newProject = new Project({
       ...validatedData.data,
       createdBy: userId,
@@ -36,6 +45,14 @@ export const createProject = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating project:", error);
+
+    // 🔹 Handle MongoDB duplicate key error
+    if (error.code === 11000 && error.keyPattern.name) {
+      return res.status(400).json({
+        message: "Project name already exists. Please choose a different name.",
+      });
+    }
+
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
