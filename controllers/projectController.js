@@ -20,6 +20,7 @@ export const createProject = async (req, res) => {
       });
     }
     const userId = req.user.userId; // Extract userId from token
+    const email = req.user.email; // Extract userId from token
 
     // ✅ Check if the project name already exists
     const existingProject = await Project.findOne({
@@ -35,6 +36,7 @@ export const createProject = async (req, res) => {
     const newProject = new Project({
       ...validatedData.data,
       createdBy: userId,
+      ownerEmail: email,
     });
 
     await newProject.save();
