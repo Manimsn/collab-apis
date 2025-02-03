@@ -19,6 +19,8 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
+    "uuid": "^11.0.5",
+    "zeptomail": "^6.1.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

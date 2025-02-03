@@ -10,7 +10,7 @@ const UserProjectMappingSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["OWNER", "FULL_ACCESS", "VIEWER", "EDITOR", "COMMENTER"],
+    enum: ["ADMIN", "VIEWER", "EDITOR", "COMMENTER"],
     required: true,
   },
 
