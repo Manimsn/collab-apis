@@ -6,7 +6,7 @@ import {
 } from "../validations/inviteValidation.js";
 import { v4 as uuidv4 } from "uuid";
 import sendEmail from "../utils/sendEmail.js";
-
+import Project from "../models/Project.js";
 /**
  * Send an Invite
  */
@@ -14,7 +14,7 @@ export const sendInvite = async (req, res) => {
   const { projectId } = req.params;
   const { email, role } = req.body;
   const createdBy = req?.user?.userId; // Assuming authentication middleware
-  console.log("createdBy", createdBy);
+
   // Validate request
   const validation = inviteSchema.safeParse({ email, role });
   if (!validation.success) {
@@ -22,6 +22,21 @@ export const sendInvite = async (req, res) => {
   }
 
   try {
+    // Fetch project details to check owner
+    const project = await Project.findById({ _id: projectId });
+    if (!project) {
+      return res.status(404).json({ message: "Project not found." });
+    }
+
+    console.log("email", email);
+    console.log("project", project);
+    // Check if the user being invited is the project owner
+    if (project.ownerEmail === email) {
+      return res.status(400).json({
+        message: "Cannot invite the project owner to their own project.",
+      });
+    }
+
     let invite = await UserProjectMapping.findOne({ projectId, email });
 
     if (invite) {
