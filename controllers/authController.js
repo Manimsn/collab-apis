@@ -42,11 +42,17 @@ export const handleLogin = async (req, res, next) => {
     }
 
     // Generate roles array (e.g., Admin, User, etc.)
-    const roles = Object.values(foundUser.roles || {}).filter(Boolean);
+    // const roles = Object.values(foundUser.roles || {}).filter(Boolean);
 
     // Generate access and refresh tokens
     const accessToken = jwt.sign(
-      { UserInfo: { userId: foundUser._id, roles, session: Date.now() } },
+      {
+        UserInfo: {
+          userId: foundUser._id,
+          email: foundUser.email,
+          session: Date.now(),
+        },
+      },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "10s" }
     );
