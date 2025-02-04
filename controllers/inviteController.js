@@ -17,6 +17,7 @@ export const sendInvite = async (req, res) => {
   const { email, role } = req.body;
   const { userId, email: userEmail, plan } = req?.user; // Extract user details from token
 
+
   // Validate request
   const validation = inviteSchema.safeParse({ email, role });
   if (!validation.success) {
@@ -26,6 +27,7 @@ export const sendInvite = async (req, res) => {
   try {
     // Fetch project details to check owner
     const project = await Project.findById({ _id: projectId });
+
     if (!project) {
       // return res.status(404).json({ message: "Project not found." });
       return res.status(404).json({ message: messages.PROJECT.NOT_FOUND });
@@ -67,7 +69,7 @@ export const sendInvite = async (req, res) => {
 
     // 🔹 Check if the project has reached the max member limit
     const memberCount = await UserProjectMapping.countDocuments({ projectId });
-    console.log("memberCount", memberCount);
+    // console.log("memberCount", memberCount);
 
     if (memberCount >= planLimits[plan].maxMembersPerProject) {
       return res.status(403).json({
@@ -86,7 +88,6 @@ export const sendInvite = async (req, res) => {
     }
 
     let invite = await UserProjectMapping.findOne({ projectId, email });
-
     if (invite) {
       if (invite.status === inviteStatus.ACCEPTED) {
         return res
@@ -103,7 +104,7 @@ export const sendInvite = async (req, res) => {
         email,
         projectId,
         role,
-        userId,
+        createdBy: userId,
         inviteToken: uuidv4(),
       });
     }
@@ -116,9 +117,9 @@ export const sendInvite = async (req, res) => {
       "Project Invitation",
       `Click here to join: ${inviteLink}`
     );
-
     res.json({ message: messages.INVITE.SENT_SUCCESS, inviteLink });
   } catch (error) {
+    console.log("projectId---------error", error);
     res.status(500).json({ error: error.message });
   }
 };
