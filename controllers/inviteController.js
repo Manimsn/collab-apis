@@ -28,8 +28,22 @@ export const sendInvite = async (req, res) => {
       return res.status(404).json({ message: "Project not found." });
     }
 
-    console.log("email", email);
-    console.log("project", project);
+    // 🔹 Check if the logged-in user is the project owner
+    if (createdBy !== project.createdBy.toString()) {
+      // 🔹 If not the owner, check if the user is an ADMIN in UserProjectMapping
+      const adminEntry = await UserProjectMapping.findOne({
+        projectId,
+        email: req.user.email, // Match the logged-in user's email
+        role: "ADMIN",
+      });
+
+      if (!adminEntry) {
+        return res.status(403).json({
+          message: "Only the project owner or an admin can invite members.",
+        });
+      }
+    }
+
     // Check if the user being invited is the project owner
     if (project.ownerEmail === email) {
       return res.status(400).json({
@@ -80,6 +94,8 @@ export const sendInvite = async (req, res) => {
  */
 export const acceptInvite = async (req, res) => {
   const { token } = req.body;
+  const userEmail = req?.user?.email;
+  console.log("req.user", req?.user?.email);
 
   // Validate token
   const validation = acceptInviteSchema.safeParse({ token });
@@ -88,7 +104,14 @@ export const acceptInvite = async (req, res) => {
 
   try {
     const invite = await UserProjectMapping.findOne({ inviteToken: token });
-    console.log(invite);
+    console.log(invite.email);
+
+    // 🔹 Ensure the logged-in user's email matches the invited email
+    if (invite.email !== userEmail) {
+      return res
+        .status(403)
+        .json({ message: "You can't use someone else's invite." });
+    }
 
     if (!invite || invite.status !== "invited")
       return res.status(400).json({ message: "Invalid or expired invite." });
@@ -133,7 +156,7 @@ export const revokeInvite = async (req, res) => {
       projectId: projectObjectId,
       email: email.trim(),
     });
-    console.log("invite", invite);
+    console.log("invite----", invite);
 
     if (!invite || invite.status !== "invited")
       return res
