@@ -28,7 +28,13 @@ describe("POST /projects", () => {
 
     // Generate a valid access token
     authToken = jwt.sign(
-      { UserInfo: { userId: userId.toString() } }, // ✅ Matches middleware structure
+      {
+        UserInfo: {
+          userId: userId.toString(),
+          email: "owner@example.com",
+          plan: "BASIC",
+        },
+      }, // ✅ Matches middleware structure
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "1h" }
     );
@@ -119,7 +125,8 @@ describe("POST /projects", () => {
       name: "Project Alpha",
       description: "Existing project",
       location: "New York",
-      createdBy: userId,
+      createdBy: userId.toString(), // Ensure createdBy is passed
+      ownerEmail: "owner@example.com", // Ensure ownerEmail is passed
     });
 
     // Attempt to create a project with the same name
