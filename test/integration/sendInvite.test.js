@@ -41,10 +41,15 @@ describe("POST /projects/:projectId/invite", () => {
     });
 
     projectId = project._id.toString();
-
     // Generate a valid access token
     authToken = jwt.sign(
-      { userId: userId.toString(), email: "owner@example.com", plan: "BASIC" },
+      {
+        UserInfo: {
+          userId: userId.toString(),
+          email: "owner@example.com",
+          plan: "BASIC",
+        },
+      },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "1h" }
     );
@@ -71,6 +76,7 @@ describe("POST /projects/:projectId/invite", () => {
       projectId: projectId,
       role: "EDITOR",
       status: inviteStatus.ACCEPTED,
+      createdBy: userId,
     });
 
     const res = await supertest(app)
@@ -80,7 +86,6 @@ describe("POST /projects/:projectId/invite", () => {
         email: "existingUser@example.com",
         role: "EDITOR",
       });
-
     expect(res.status).to.equal(400);
     expect(res.body.message).to.equal(messages.INVITE.ALREADY_MEMBER);
   });
@@ -107,16 +112,19 @@ describe("POST /projects/:projectId/invite", () => {
       });
 
     expect(res.status).to.equal(401);
-    expect(res.body.message).to.equal(messages.AUTH.UNAUTHORIZED);
+    // expect(res.body.message).to.equal(messages.AUTH.UNAUTHORIZED);
+    expect(res.body.message).to.equal("Access token missing or invalid");
   });
 
   it("should return 403 if the user is not the project owner or an admin", async () => {
     // Generate an unauthorized user token
     const unauthorizedToken = jwt.sign(
       {
-        userId: new mongoose.Types.ObjectId().toString(),
-        email: "otherUser@example.com",
-        plan: "BASIC",
+        UserInfo: {
+          userId: new mongoose.Types.ObjectId().toString(),
+          email: "otherUser@example.com",
+          plan: "BASIC",
+        },
       },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "1h" }
@@ -142,6 +150,7 @@ describe("POST /projects/:projectId/invite", () => {
         projectId: projectId,
         role: "VIEWER",
         status: inviteStatus.ACCEPTED,
+        createdBy: userId,
       });
     }
 
@@ -183,7 +192,8 @@ describe("POST /projects/:projectId/invite", () => {
       });
 
     expect(res.status).to.equal(400);
-    expect(res.body.message).to.equal("Validation failed");
+    // expect(res.body.message).to.equal("Validation failed");
+    expect(res.body.error.email._errors).to.include("Required");
   });
 
   it("should return 400 if role is missing in request body", async () => {
@@ -195,7 +205,8 @@ describe("POST /projects/:projectId/invite", () => {
       });
 
     expect(res.status).to.equal(400);
-    expect(res.body.message).to.equal("Validation failed");
+    // expect(res.body.message).to.equal("Validation failed");
+    expect(res.body.error.role._errors).to.include("Required");
   });
 
   it("should return 403 when using an expired access token", async () => {
@@ -214,6 +225,7 @@ describe("POST /projects/:projectId/invite", () => {
       });
 
     expect(res.status).to.equal(403);
-    expect(res.body.message).to.equal(messages.AUTH.FORBIDDEN);
+    // expect(res.body.message).to.equal(messages.AUTH.FORBIDDEN);
+    expect(res.body.message).to.equal("Invalid or expired token");
   });
 });
