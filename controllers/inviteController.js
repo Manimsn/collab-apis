@@ -88,7 +88,7 @@ export const sendInvite = async (req, res) => {
     let invite = await UserProjectMapping.findOne({ projectId, email });
 
     if (invite) {
-      if (invite.status === "accepted") {
+      if (invite.status === inviteStatus.ACCEPTED) {
         return res
           .status(400)
           .json({ message: messages.INVITE.ALREADY_MEMBER });
@@ -117,7 +117,7 @@ export const sendInvite = async (req, res) => {
       `Click here to join: ${inviteLink}`
     );
 
-    res.json({ message: "Invitation sent successfully!", inviteLink });
+    res.json({ message: messages.INVITE.SENT_SUCCESS, inviteLink });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
