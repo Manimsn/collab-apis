@@ -7,13 +7,15 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import sendEmail from "../utils/sendEmail.js";
 import Project from "../models/Project.js";
+import { inviteStatus, planLimits, userRoles } from "../config/constants.js";
+import { messages } from "../config/messages.js";
 /**
  * Send an Invite
  */
 export const sendInvite = async (req, res) => {
   const { projectId } = req.params;
   const { email, role } = req.body;
-  const { userId, email: userEmail, plan } = req?.user; // Assuming authentication middleware
+  const { userId, email: userEmail, plan } = req?.user; // Extract user details from token
 
   // Validate request
   const validation = inviteSchema.safeParse({ email, role });
@@ -25,16 +27,17 @@ export const sendInvite = async (req, res) => {
     // Fetch project details to check owner
     const project = await Project.findById({ _id: projectId });
     if (!project) {
-      return res.status(404).json({ message: "Project not found." });
+      // return res.status(404).json({ message: "Project not found." });
+      return res.status(404).json({ message: messages.PROJECT.NOT_FOUND });
     }
 
-    // 🔹 Check if the logged-in user is the project owner
+    // 🔹 Validate if the logged-in user is the project owner
     if (userId !== project.createdBy.toString()) {
       // 🔹 If not the owner, check if the user is an ADMIN in UserProjectMapping
       // const adminEntry = await UserProjectMapping.findOne({
       //   projectId,
       //   email: req.user.email, // Match the logged-in user's email
-      //   role: "ADMIN",
+      //   role: userRoles.ADMIN,
       // });
 
       // if (!adminEntry) {
@@ -43,14 +46,42 @@ export const sendInvite = async (req, res) => {
       //   });
       // }
       return res.status(403).json({
-        message: "Only the project owner can invite members.",
+        message: messages.PROJECT.INVITE_PERMISSION_ERROR,
       });
     }
 
-    // Check if the user being invited is the project owner
+    // 🔹 Check if the user has exceeded their project limit
+    // const userProjectsCount = await Project.countDocuments({
+    //   createdBy: userId,
+    // });
+
+    // if (userProjectsCount >= planLimits[plan].maxProjects) {
+    //   return res.status(403).json({
+    //     // message: `Your plan (${plan}) allows only ${planLimits[plan].maxProjects} projects.`,
+    //     message: messages.PROJECT.MAX_PROJECTS_REACHED(
+    //       plan,
+    //       planLimits[plan].maxProjects
+    //     ),
+    //   });
+    // }
+
+    // 🔹 Check if the project has reached the max member limit
+    const memberCount = await UserProjectMapping.countDocuments({ projectId });
+    console.log("memberCount", memberCount);
+
+    if (memberCount >= planLimits[plan].maxMembersPerProject) {
+      return res.status(403).json({
+        message: messages.PROJECT.MAX_MEMBERS_REACHED(
+          plan,
+          planLimits[plan].maxMembersPerProject
+        ),
+      });
+    }
+
+    // 🔹 Prevent inviting the project owner
     if (project.ownerEmail === email) {
       return res.status(400).json({
-        message: "Cannot invite the project owner to their own project.",
+        message: messages.PROJECT.INVITE_OWNER_ERROR,
       });
     }
 
@@ -60,11 +91,11 @@ export const sendInvite = async (req, res) => {
       if (invite.status === "accepted") {
         return res
           .status(400)
-          .json({ message: "User is already a project member." });
+          .json({ message: messages.INVITE.ALREADY_MEMBER });
       }
 
       invite.inviteToken = uuidv4();
-      invite.status = "invited";
+      invite.status = inviteStatus.INVITED;
       invite.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
       invite.updatedAt = new Date();
     } else {
@@ -111,19 +142,20 @@ export const acceptInvite = async (req, res) => {
 
     // 🔹 Ensure the logged-in user's email matches the invited email
     if (invite.email !== userEmail) {
-      return res
-        .status(403)
-        .json({ message: "You can't use someone else's invite." });
+      return res.status(403).json({ message: messages.INVITE.UNAUTHORIZED });
     }
 
-    if (!invite || invite.status !== "invited")
-      return res.status(400).json({ message: "Invalid or expired invite." });
+    if (!invite || invite.status !== inviteStatus.INVITED)
+      return res
+        .status(400)
+        .json({ message: messages.INVITE.INVALID_OR_EXPIRED });
 
-    invite.status = "accepted";
+    invite.status = inviteStatus.ACCEPTED;
     invite.updatedAt = new Date();
     await invite.save();
 
-    res.json({ message: "You have successfully joined the project!" });
+    // res.json({ message: "You have successfully joined the project!" });
+    res.json({ message: messages.INVITE.SUCCESSFULLY_JOINED });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -161,16 +193,16 @@ export const revokeInvite = async (req, res) => {
     });
     console.log("invite----", invite);
 
-    if (!invite || invite.status !== "invited")
+    if (!invite || invite.status !== inviteStatus.INVITED)
       return res
         .status(400)
-        .json({ message: "Invite not found or already used." });
+        .json({ message: messages.INVITE.NOT_FOUND_OR_USED });
 
-    invite.status = "revoked";
+    invite.status = inviteStatus.REVOKED;
     invite.updatedAt = new Date();
     await invite.save();
 
-    res.json({ message: "Invitation revoked successfully." });
+    res.json({ message: messages.INVITE.REVOKED_SUCCESS });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
