@@ -31,17 +31,20 @@ export const sendInvite = async (req, res) => {
     // 🔹 Check if the logged-in user is the project owner
     if (createdBy !== project.createdBy.toString()) {
       // 🔹 If not the owner, check if the user is an ADMIN in UserProjectMapping
-      const adminEntry = await UserProjectMapping.findOne({
-        projectId,
-        email: req.user.email, // Match the logged-in user's email
-        role: "ADMIN",
-      });
+      // const adminEntry = await UserProjectMapping.findOne({
+      //   projectId,
+      //   email: req.user.email, // Match the logged-in user's email
+      //   role: "ADMIN",
+      // });
 
-      if (!adminEntry) {
-        return res.status(403).json({
-          message: "Only the project owner or an admin can invite members.",
-        });
-      }
+      // if (!adminEntry) {
+      //   return res.status(403).json({
+      //     message: "Only the project owner or an admin can invite members.",
+      //   });
+      // }
+      return res.status(403).json({
+        message: "Only the project owner can invite members.",
+      });
     }
 
     // Check if the user being invited is the project owner
