@@ -13,7 +13,7 @@ import Project from "../models/Project.js";
 export const sendInvite = async (req, res) => {
   const { projectId } = req.params;
   const { email, role } = req.body;
-  const createdBy = req?.user?.userId; // Assuming authentication middleware
+  const { userId, email: userEmail, plan } = req?.user?.userId; // Assuming authentication middleware
 
   // Validate request
   const validation = inviteSchema.safeParse({ email, role });
@@ -29,7 +29,7 @@ export const sendInvite = async (req, res) => {
     }
 
     // 🔹 Check if the logged-in user is the project owner
-    if (createdBy !== project.createdBy.toString()) {
+    if (userId !== project.createdBy.toString()) {
       // 🔹 If not the owner, check if the user is an ADMIN in UserProjectMapping
       // const adminEntry = await UserProjectMapping.findOne({
       //   projectId,
@@ -72,7 +72,7 @@ export const sendInvite = async (req, res) => {
         email,
         projectId,
         role,
-        createdBy,
+        userId,
         inviteToken: uuidv4(),
       });
     }

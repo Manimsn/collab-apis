@@ -50,6 +50,7 @@ export const handleLogin = async (req, res, next) => {
         UserInfo: {
           userId: foundUser._id,
           email: foundUser.email,
+          plan: foundUser.plan,
           session: Date.now(),
         },
       },
