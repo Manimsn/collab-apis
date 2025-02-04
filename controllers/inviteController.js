@@ -13,7 +13,7 @@ import Project from "../models/Project.js";
 export const sendInvite = async (req, res) => {
   const { projectId } = req.params;
   const { email, role } = req.body;
-  const { userId, email: userEmail, plan } = req?.user?.userId; // Assuming authentication middleware
+  const { userId, email: userEmail, plan } = req?.user; // Assuming authentication middleware
 
   // Validate request
   const validation = inviteSchema.safeParse({ email, role });
