@@ -1,10 +1,8 @@
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import {
   clearJwtCookie,
-  generateAccessToken,
-  generateRefreshToken,
-  setJwtCookie,
+  verifyAndHandleHackedUser,
+  verifyAndHandleRefreshToken,
 } from "../utils/jwtUtils.js";
 
 // Steps to reproduce: Reusing the valid token
@@ -38,27 +36,8 @@ export const handleRefreshToken = async (req, res, next) => {
 
     // Handle refresh token reuse or invalid token
     if (!foundUser) {
-      jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
-        async (err, decoded) => {
-          if (err) {
-            // console.log("JWT Verification Error:", err.message); // Log error
-            return res
-              .status(403)
-              .json({ message: "Forbidden: Invalid token." }); // Ensure response
-          }
+      await verifyAndHandleHackedUser(refreshToken, res);
 
-          const hackedUser = await User.findOne({ _id: decoded.userId }).exec();
-
-          if (hackedUser) {
-            hackedUser.refreshTokens = [];
-            await hackedUser.save();
-            // console.log("All refresh tokens cleared for hacked user.");
-          }
-          return res.sendStatus(403); // Forbidden
-        }
-      );
       return; // Prevent further execution
     }
 
@@ -68,36 +47,11 @@ export const handleRefreshToken = async (req, res, next) => {
     );
 
     // Verify the incoming refresh token
-    jwt.verify(
+    await verifyAndHandleRefreshToken(
       refreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-      async (err, decoded) => {
-        if (err) {
-          foundUser.refreshTokens = [...newRefreshTokenArray]; // Remove the expired token
-          await foundUser.save();
-          return res.status(403).json({ message: "Forbidden: Token expired." });
-        }
-
-        // Validate the decoded user ID
-        if (decoded.userId !== foundUser._id.toString()) {
-          return res.status(403).json({ message: "Forbidden: Invalid token." });
-        }
-
-        // Generate new tokens
-        const accessToken = generateAccessToken(foundUser);
-
-        const newRefreshToken = generateRefreshToken(foundUser);
-
-        // Update refresh token array
-        foundUser.refreshTokens = [...newRefreshTokenArray, newRefreshToken];
-        await foundUser.save();
-
-        // Send the new refresh token in a secure cookie       
-        setJwtCookie(res, newRefreshToken);
-
-        // Send the new access token in the response
-        res.status(200).json({ accessToken });
-      }
+      res,
+      foundUser,
+      newRefreshTokenArray
     );
   } catch (err) {
     next(err); // Pass error to the global error handler
