@@ -1,11 +1,11 @@
 import express from "express";
-import { createProject } from "../controllers/projectController.js";
+import { createProject } from "../controllers/project/projectController.js";
 import verifyAccessToken from "../middlewares/authMiddleware.js";
 import {
   sendInvite,
   acceptInvite,
   revokeInvite,
-} from "../controllers/inviteController.js";
+} from "../controllers/project/inviteController.js";
 
 const router = express.Router();
 

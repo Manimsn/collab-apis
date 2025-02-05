@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import User from "../models/User.js";
+import User from "../../models/User.js";
 import { z } from "zod";
 
 // Validation schema for reset password request

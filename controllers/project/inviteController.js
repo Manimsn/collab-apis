@@ -1,14 +1,18 @@
 import mongoose from "mongoose";
-import UserProjectMapping from "../models/UserProjectMapping.js";
+import { v4 as uuidv4 } from "uuid";
+
+import UserProjectMapping from "../../models/UserProjectMapping.js";
+import Project from "../../models/Project.js";
+
 import {
   inviteSchema,
   acceptInviteSchema,
-} from "../validations/inviteValidation.js";
-import { v4 as uuidv4 } from "uuid";
-import sendEmail from "../utils/sendEmail.js";
-import Project from "../models/Project.js";
-import { inviteStatus, planLimits, userRoles } from "../config/constants.js";
-import { messages } from "../config/messages.js";
+} from "../../validations/inviteValidation.js";
+
+import sendEmail from "../../utils/sendEmail.js";
+import { inviteStatus, planLimits } from "../../config/constants.js";
+import { messages } from "../../config/messages.js";
+
 /**
  * Send an Invite
  */

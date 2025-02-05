@@ -1,12 +1,12 @@
 import bcrypt from "bcrypt";
-import User from "../models/User.js";
+import User from "../../models/User.js";
 import { z } from "zod";
 import {
   clearJwtCookie,
   generateAccessToken,
   generateRefreshToken,
   setJwtCookie,
-} from "../utils/jwtUtils.js";
+} from "../../utils/jwtUtils.js";
 
 // Validation schema for login request
 const loginSchema = z.object({
@@ -45,9 +45,6 @@ export const handleLogin = async (req, res, next) => {
         .status(401)
         .json({ message: "Unauthorized: Invalid email or password." });
     }
-
-    // Generate roles array (e.g., Admin, User, etc.)
-    // const roles = Object.values(foundUser.roles || {}).filter(Boolean);
 
     // Generate access and refresh tokens
     const accessToken = generateAccessToken(foundUser);

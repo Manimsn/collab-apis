@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import UserService from "../services/userService.js"; // Use ESM import
+import UserService from "../../services/userService.js"; // Use ESM import
 
 export const handleNewUser = async (req, res, next) => {
   try {

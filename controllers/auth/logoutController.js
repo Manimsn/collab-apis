@@ -1,5 +1,5 @@
-import User from "../models/User.js";
-import { clearJwtCookie } from "../utils/jwtUtils.js";
+import User from "../../models/User.js";
+import { clearJwtCookie } from "../../utils/jwtUtils.js";
 
 export const handleLogout = async (req, res, next) => {
   try {

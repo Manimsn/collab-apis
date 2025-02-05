@@ -1,9 +1,9 @@
-import User from "../models/User.js";
+import User from "../../models/User.js";
 import {
   clearJwtCookie,
   verifyAndHandleHackedUser,
   verifyAndHandleRefreshToken,
-} from "../utils/jwtUtils.js";
+} from "../../utils/jwtUtils.js";
 
 // Steps to reproduce: Reusing the valid token
 // 	1. set the refresh token expiry to 1d not 10 seconds because if token expired it will be behave as invalid signature instead of hacked user detection

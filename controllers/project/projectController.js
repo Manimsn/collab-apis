@@ -1,5 +1,5 @@
 import { z } from "zod";
-import Project from "../models/Project.js";
+import Project from "../../models/Project.js";
 
 // Define Zod schema for validation
 const projectSchema = z.object({
