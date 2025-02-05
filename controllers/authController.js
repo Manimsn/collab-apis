@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import { z } from "zod";
 import {
+  clearJwtCookie,
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/jwtUtils.js";
@@ -65,11 +66,8 @@ export const handleLogin = async (req, res, next) => {
         console.log("Detected refresh token reuse!");
         newRefreshTokenArray = [];
       }
-      res.clearCookie("jwt", {
-        httpOnly: true,
-        sameSite: "None",
-        secure: true,
-      });
+      
+      clearJwtCookie(res);
     }
 
     // Save updated refresh tokens in DB

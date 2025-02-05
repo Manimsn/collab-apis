@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import {
+  clearJwtCookie,
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/jwtUtils.js";
@@ -27,11 +28,7 @@ export const handleRefreshToken = async (req, res, next) => {
     const refreshToken = cookies.jwt;
 
     // Clear the old refresh token cookie
-    res.clearCookie("jwt", {
-      httpOnly: true,
-      sameSite: "None",
-      secure: true,
-    });
+    clearJwtCookie(res);
 
     // Find user associated with the refresh token
     const foundUser = await User.findOne({

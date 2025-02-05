@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { clearJwtCookie } from "../utils/jwtUtils.js";
 
 export const handleLogout = async (req, res, next) => {
   try {
@@ -16,11 +17,7 @@ export const handleLogout = async (req, res, next) => {
 
     if (!foundUser) {
       // Token doesn't exist in DB. Clear the cookie and send 204 response.
-      res.clearCookie("jwt", {
-        httpOnly: true,
-        sameSite: "None",
-        secure: true,
-      });
+      clearJwtCookie(res);
       return res.sendStatus(204); // No content
     }
 
@@ -33,7 +30,7 @@ export const handleLogout = async (req, res, next) => {
     await foundUser.save();
 
     // Clear the refreshToken cookie
-    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+    clearJwtCookie(res);
     res.sendStatus(204); // No content
   } catch (err) {
     next(err); // Pass errors to the global error handler

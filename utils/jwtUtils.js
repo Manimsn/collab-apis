@@ -31,3 +31,15 @@ export const generateRefreshToken = (user, expiresIn) => {
     expiresIn: expiresIn || process.env.REFRESH_TOKEN_EXPIRY || "10s",
   });
 };
+
+/**
+ * Clears the JWT cookie from the response.
+ * @param {Response} res - The Express response object.
+ */
+export const clearJwtCookie = (res) => {
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    sameSite: "None",
+    secure: true,
+  });
+};
