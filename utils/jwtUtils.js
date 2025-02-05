@@ -43,3 +43,18 @@ export const clearJwtCookie = (res) => {
     secure: true,
   });
 };
+
+/**
+ * Sets a JWT cookie in the response.
+ * @param {Response} res - The Express response object.
+ * @param {string} token - The JWT token to be set.
+ * @param {number} [maxAge] - Optional max age for the cookie (default: 24 hours).
+ */
+export const setJwtCookie = (res, token, maxAge = 24 * 60 * 60 * 1000) => {
+  res.cookie("jwt", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    maxAge, // Default: 24 hours 24 * 60 * 60 * 1000, // 1 day
+  });
+};

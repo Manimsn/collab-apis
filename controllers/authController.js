@@ -5,6 +5,7 @@ import {
   clearJwtCookie,
   generateAccessToken,
   generateRefreshToken,
+  setJwtCookie,
 } from "../utils/jwtUtils.js";
 
 // Validation schema for login request
@@ -66,7 +67,7 @@ export const handleLogin = async (req, res, next) => {
         console.log("Detected refresh token reuse!");
         newRefreshTokenArray = [];
       }
-      
+
       clearJwtCookie(res);
     }
 
@@ -75,12 +76,7 @@ export const handleLogin = async (req, res, next) => {
     await foundUser.save();
 
     // Set secure refresh token cookie
-    res.cookie("jwt", newRefreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
+    setJwtCookie(res, newRefreshToken);
 
     // Send access token and success response
     res.status(200).json({ accessToken });

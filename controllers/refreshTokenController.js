@@ -4,6 +4,7 @@ import {
   clearJwtCookie,
   generateAccessToken,
   generateRefreshToken,
+  setJwtCookie,
 } from "../utils/jwtUtils.js";
 
 // Steps to reproduce: Reusing the valid token
@@ -91,13 +92,8 @@ export const handleRefreshToken = async (req, res, next) => {
         foundUser.refreshTokens = [...newRefreshTokenArray, newRefreshToken];
         await foundUser.save();
 
-        // Send the new refresh token in a secure cookie
-        res.cookie("jwt", newRefreshToken, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "None",
-          maxAge: 24 * 60 * 60 * 1000, // 1 day
-        });
+        // Send the new refresh token in a secure cookie       
+        setJwtCookie(res, newRefreshToken);
 
         // Send the new access token in the response
         res.status(200).json({ accessToken });
