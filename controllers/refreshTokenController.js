@@ -1,5 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../utils/jwtUtils.js";
 
 // Steps to reproduce: Reusing the valid token
 // 	1. set the refresh token expiry to 1d not 10 seconds because if token expired it will be behave as invalid signature instead of hacked user detection
@@ -82,22 +86,9 @@ export const handleRefreshToken = async (req, res, next) => {
         }
 
         // Generate new tokens
-        const accessToken = jwt.sign(
-          {
-            UserInfo: {
-              userId: foundUser._id,
-              email: foundUser.email,
-            },
-          },
-          process.env.ACCESS_TOKEN_SECRET,
-          { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "10s" }
-        );
+        const accessToken = generateAccessToken(foundUser);
 
-        const newRefreshToken = jwt.sign(
-          { userId: foundUser._id },
-          process.env.REFRESH_TOKEN_SECRET,
-          { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "10s" }
-        );
+        const newRefreshToken = generateRefreshToken(foundUser);
 
         // Update refresh token array
         foundUser.refreshTokens = [...newRefreshTokenArray, newRefreshToken];

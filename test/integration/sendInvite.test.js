@@ -4,10 +4,11 @@ import app from "../../app.js"; // Import the app
 import Project from "../../models/Project.js";
 import UserProjectMapping from "../../models/UserProjectMapping.js";
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
-import jwt from "jsonwebtoken";
+
 import mongoose from "mongoose";
 import { inviteStatus } from "../../config/constants.js";
 import { messages } from "../../config/messages.js";
+import { generateAccessToken } from "../../utils/jwtUtils.js";
 
 const { expect } = chai;
 
@@ -42,17 +43,12 @@ describe("POST /projects/:projectId/invite", () => {
 
     projectId = project._id.toString();
     // Generate a valid access token
-    authToken = jwt.sign(
-      {
-        UserInfo: {
-          userId: userId.toString(),
-          email: "owner@example.com",
-          plan: "BASIC",
-        },
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" }
-    );
+    const foundUser = {
+      _id: userId.toString(),
+      email: "owner@example.com",
+      plan: "BASIC",
+    };
+    authToken = generateAccessToken(foundUser);
   });
 
   // --- Positive Test Case ---
@@ -118,17 +114,13 @@ describe("POST /projects/:projectId/invite", () => {
 
   it("should return 403 if the user is not the project owner or an admin", async () => {
     // Generate an unauthorized user token
-    const unauthorizedToken = jwt.sign(
-      {
-        UserInfo: {
-          userId: new mongoose.Types.ObjectId().toString(),
-          email: "otherUser@example.com",
-          plan: "BASIC",
-        },
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" }
-    );
+    const foundUser = {
+      _id: new mongoose.Types.ObjectId().toString(),
+      email: "otherUser@example.com",
+      plan: "BASIC",
+    };
+
+    const unauthorizedToken = generateAccessToken(foundUser);
 
     const res = await supertest(app)
       .post(`/projects/${projectId}/invite`)
@@ -210,11 +202,13 @@ describe("POST /projects/:projectId/invite", () => {
   });
 
   it("should return 403 when using an expired access token", async () => {
-    const expiredToken = jwt.sign(
-      { userId: userId.toString(), email: "owner@example.com", plan: "BASIC" },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1ms" } // Expired immediately
-    );
+    const foundUser = {
+      _id: userId.toString(),
+      email: "owner@example.com",
+      plan: "BASIC",
+    };
+
+    const expiredToken = generateAccessToken(foundUser, "1ms");
 
     const res = await supertest(app)
       .post(`/projects/${projectId}/invite`)

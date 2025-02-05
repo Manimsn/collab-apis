@@ -3,12 +3,13 @@ import supertest from "supertest";
 import app from "../../app.js"; // Import the app
 import UserProjectMapping from "../../models/UserProjectMapping.js";
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
-import jwt from "jsonwebtoken";
+
 import mongoose from "mongoose";
 import sinon from "sinon"; // Import sinon for stubbing and mocking
 import { v4 as uuidv4 } from "uuid";
 import { inviteStatus } from "../../config/constants.js";
 import { messages } from "../../config/messages.js";
+import { generateAccessToken } from "../../utils/jwtUtils.js";
 
 const { expect } = chai;
 
@@ -34,17 +35,12 @@ describe("DELETE /projects/:projectId/invite", () => {
     userId = new mongoose.Types.ObjectId();
 
     // Generate a valid access token
-    authToken = jwt.sign(
-      {
-        UserInfo: {
-          userId: userId.toString(),
-          email: "owner@example.com",
-          plan: "BASIC",
-        },
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" }
-    );
+    const foundUser = {
+      _id: userId.toString(),
+      email: "owner@example.com",
+      plan: "BASIC",
+    };
+    authToken = generateAccessToken(foundUser);
 
     // Create an invite with a token
     const invite = await UserProjectMapping.create({

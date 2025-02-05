@@ -1,7 +1,10 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { z } from "zod";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../utils/jwtUtils.js";
 
 // Validation schema for login request
 const loginSchema = z.object({
@@ -45,24 +48,9 @@ export const handleLogin = async (req, res, next) => {
     // const roles = Object.values(foundUser.roles || {}).filter(Boolean);
 
     // Generate access and refresh tokens
-    const accessToken = jwt.sign(
-      {
-        UserInfo: {
-          userId: foundUser._id,
-          email: foundUser.email,
-          plan: foundUser.plan,
-          session: Date.now(),
-        },
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "10s" }
-    );
+    const accessToken = generateAccessToken(foundUser);
 
-    const newRefreshToken = jwt.sign(
-      { userId: foundUser._id },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "10s" }
-    );
+    const newRefreshToken = generateRefreshToken(foundUser);
 
     // Manage refresh tokens array
     let newRefreshTokenArray = cookies?.jwt

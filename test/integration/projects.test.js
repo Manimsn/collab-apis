@@ -3,8 +3,9 @@ import supertest from "supertest";
 import app from "../../app.js"; // Import the app
 import Project from "../../models/Project.js";
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
-import jwt from "jsonwebtoken";
+
 import mongoose from "mongoose";
+import { generateAccessToken } from "../../utils/jwtUtils.js";
 
 const { expect } = chai;
 
@@ -27,17 +28,12 @@ describe("POST /projects", () => {
     userId = new mongoose.Types.ObjectId();
 
     // Generate a valid access token
-    authToken = jwt.sign(
-      {
-        UserInfo: {
-          userId: userId.toString(),
-          email: "owner@example.com",
-          plan: "BASIC",
-        },
-      }, // ✅ Matches middleware structure
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" }
-    );
+    const foundUser = {
+      _id: userId.toString(),
+      email: "owner@example.com",
+      plan: "BASIC",
+    };
+    authToken = generateAccessToken(foundUser);
   });
 
   // --- Positive Test Cases ---
@@ -171,11 +167,12 @@ describe("POST /projects", () => {
   });
 
   it("should return 403 when using an expired access token", async () => {
-    const expiredToken = jwt.sign(
-      { userId: userId.toString() },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1ms" } // Expired immediately
-    );
+    const foundUser = {
+      _id: userId.toString(),
+      email: "invitee@example.com",
+      plan: "BASIC",
+    };
+    const expiredToken = generateAccessToken(foundUser, "1ms");
 
     const res = await supertest(app)
       .post("/projects")

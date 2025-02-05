@@ -3,12 +3,13 @@ import supertest from "supertest";
 import app from "../../app.js"; // Import the app
 import UserProjectMapping from "../../models/UserProjectMapping.js";
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
-import jwt from "jsonwebtoken";
+
 import mongoose from "mongoose";
 import { inviteStatus } from "../../config/constants.js";
 import { messages } from "../../config/messages.js";
 import { v4 as uuidv4 } from "uuid";
 import sinon from "sinon"; // Import sinon for stubbing and mocking
+import { generateAccessToken } from "../../utils/jwtUtils.js";
 
 const { expect } = chai;
 
@@ -34,17 +35,12 @@ describe("POST /projects/invite/accept", () => {
     userId = new mongoose.Types.ObjectId();
 
     // Generate a valid access token
-    authToken = jwt.sign(
-      {
-        UserInfo: {
-          userId: userId.toString(),
-          email: inviteEmail,
-          plan: "BASIC",
-        },
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" }
-    );
+    const foundUser = {
+      _id: userId.toString(),
+      email: inviteEmail,
+      plan: "BASIC",
+    };
+    authToken = generateAccessToken(foundUser);
 
     // Create an invite with a token
     const invite = await UserProjectMapping.create({
@@ -87,18 +83,13 @@ describe("POST /projects/invite/accept", () => {
   });
 
   it("should return 403 if the email does not match the invited email", async () => {
+    const foundUser = {
+      _id: new mongoose.Types.ObjectId().toString(),
+      email: "unauthorized@example.com",
+      plan: "BASIC",
+    };
     // Simulate a different user
-    const unauthorizedUserToken = jwt.sign(
-      {
-        UserInfo: {
-          userId: new mongoose.Types.ObjectId().toString(),
-          email: "unauthorized@example.com", // Unauthorized email
-          plan: "BASIC",
-        },
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" }
-    );
+    const unauthorizedUserToken = generateAccessToken(foundUser);
 
     const res = await supertest(app)
       .post("/projects/invite/accept")
