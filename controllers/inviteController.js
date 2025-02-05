@@ -17,7 +17,6 @@ export const sendInvite = async (req, res) => {
   const { email, role } = req.body;
   const { userId, email: userEmail, plan } = req?.user; // Extract user details from token
 
-
   // Validate request
   const validation = inviteSchema.safeParse({ email, role });
   if (!validation.success) {
@@ -130,26 +129,25 @@ export const sendInvite = async (req, res) => {
 export const acceptInvite = async (req, res) => {
   const { token } = req.body;
   const userEmail = req?.user?.email;
-  console.log("req.user", req?.user?.email);
 
   // Validate token
   const validation = acceptInviteSchema.safeParse({ token });
+
   if (!validation.success)
     return res.status(400).json({ error: validation.error.format() });
 
   try {
     const invite = await UserProjectMapping.findOne({ inviteToken: token });
-    console.log(invite.email);
+
+    if (!invite || invite?.status !== inviteStatus.INVITED)
+      return res
+        .status(400)
+        .json({ message: messages.INVITE.INVALID_OR_EXPIRED });
 
     // 🔹 Ensure the logged-in user's email matches the invited email
     if (invite.email !== userEmail) {
       return res.status(403).json({ message: messages.INVITE.UNAUTHORIZED });
     }
-
-    if (!invite || invite.status !== inviteStatus.INVITED)
-      return res
-        .status(400)
-        .json({ message: messages.INVITE.INVALID_OR_EXPIRED });
 
     invite.status = inviteStatus.ACCEPTED;
     invite.updatedAt = new Date();
@@ -183,16 +181,15 @@ export const revokeInvite = async (req, res) => {
 
     const projectObjectId = new mongoose.Types.ObjectId(projectId);
 
-    console.log("🔹 Searching for Invite:", {
-      projectId: projectObjectId,
-      email: email.trim(),
-    });
+    // console.log("🔹 Searching for Invite:", {
+    //   projectId: projectObjectId,
+    //   email: email.trim(),
+    // });
 
     const invite = await UserProjectMapping.findOne({
       projectId: projectObjectId,
       email: email.trim(),
     });
-    console.log("invite----", invite);
 
     if (!invite || invite.status !== inviteStatus.INVITED)
       return res
