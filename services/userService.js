@@ -35,3 +35,12 @@ const UserService = {
 };
 
 export default UserService; // Use ESM export
+
+/**
+ * Finds a user based on a dynamic query.
+ * @param {Object} query - The query object to search for the user.
+ * @returns {Promise<Object|null>} - Returns the user object if found, otherwise null.
+ */
+export const findUser = async (query) => {
+  return await User.findOne(query).exec();
+};

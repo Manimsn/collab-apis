@@ -8,6 +8,7 @@ import User from "../../models/User.js"; // Import the User model
 
 // 📌 Configurations & Utilities
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
+import { findUser } from "../../services/userService.js";
 
 const { expect } = chai;
 
@@ -39,7 +40,7 @@ describe("POST /register", () => {
     expect(res.body.message).to.equal("User John Doe created successfully.");
 
     // Verify the user exists in the database
-    const user = await User.findOne({ email: "john.doe@example.com" });
+    const user = await findUser({ email: "john.doe@example.com" });
     expect(user).to.not.be.null;
     expect(user.passwordHash).to.not.equal("Password123"); // Ensure password is hashed
     expect(user.planType).to.equal("Monthly");
@@ -146,7 +147,7 @@ describe("POST /register", () => {
 
     expect(res.status).to.equal(201);
 
-    const user = await User.findOne({ email: "john.doe@example.com" });
+    const user = await findUser({ email: "john.doe@example.com" });
     expect(user.planType).to.be.null; // Default value for planType
     expect(user.credits).to.equal(0); // Default value for credits
   });

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js"; // Adjust path based on your project structure
+import { findUser } from "../services/userService.js";
 
 /**
  * Generates an access token for a user.
@@ -59,7 +60,6 @@ export const setJwtCookie = (res, token, maxAge = 24 * 60 * 60 * 1000) => {
     maxAge, // Default: 24 hours 24 * 60 * 60 * 1000, // 1 day
   });
 };
-
 
 /**
  * Verifies a refresh token and processes authentication logic.
@@ -122,7 +122,7 @@ export const verifyAndHandleHackedUser = async (refreshToken, res) => {
         return res.status(403).json({ message: "Forbidden: Invalid token." });
       }
 
-      const hackedUser = await User.findOne({ _id: decoded.userId }).exec();
+      const hackedUser = await findUser({ _id: decoded.userId });
 
       if (hackedUser) {
         hackedUser.refreshTokens = [];

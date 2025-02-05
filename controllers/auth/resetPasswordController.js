@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 
-import User from "../../models/User.js";
 import { resetPasswordSchema } from "../../validations/authValidation.js";
+import { findUser } from "../../services/userService.js";
 
 export const handleResetPassword = async (req, res, next) => {
   try {
@@ -19,9 +19,9 @@ export const handleResetPassword = async (req, res, next) => {
         .json({ message: "New password and confirmation do not match." });
     }
 
-    const foundUser = await User.findOne({
+    const foundUser = await findUser({
       email: { $regex: `^${email}$`, $options: "i" },
-    }).exec();
+    });
 
     if (!foundUser) {
       return res

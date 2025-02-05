@@ -9,6 +9,7 @@ import User from "../../models/User.js";
 
 // 📌 Configurations & Utilities
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
+import { findUser } from "../../services/userService.js";
 
 const { expect } = chai;
 
@@ -57,7 +58,7 @@ describe("POST /resetpassword", () => {
     expect(res.body.message).to.equal("Password reset successfully.");
 
     // Verify the password is updated in the database
-    const updatedUser = await User.findOne({ email: user.email });
+    const updatedUser = await findUser({ email: user.email });
     const isPasswordUpdated = await bcrypt.compare(
       "NewPass@123",
       updatedUser.passwordHash
@@ -206,7 +207,7 @@ describe("POST /resetpassword", () => {
       confirmPassword: "FinalPass@123",
     });
 
-    const updatedUser = await User.findOne({ email: user.email });
+    const updatedUser = await findUser({ email: user.email });
     expect(updatedUser.updatedAt).to.not.deep.equal(previousUpdatedAt);
   });
 });

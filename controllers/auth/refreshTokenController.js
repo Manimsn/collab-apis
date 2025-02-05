@@ -1,4 +1,4 @@
-import User from "../../models/User.js";
+import { findUser } from "../../services/userService.js";
 import {
   clearJwtCookie,
   verifyAndHandleHackedUser,
@@ -30,9 +30,7 @@ export const handleRefreshToken = async (req, res, next) => {
     clearJwtCookie(res);
 
     // Find user associated with the refresh token
-    const foundUser = await User.findOne({
-      refreshTokens: refreshToken,
-    }).exec();
+    const foundUser = await findUser({ refreshTokens: refreshToken });
 
     // Handle refresh token reuse or invalid token
     if (!foundUser) {

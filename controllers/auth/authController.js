@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import User from "../../models/User.js";
 
 import {
   clearJwtCookie,
@@ -8,6 +7,7 @@ import {
   setJwtCookie,
 } from "../../utils/jwtUtils.js";
 import { loginSchema } from "../../validations/authValidation.js";
+import { findUser } from "../../services/userService.js";
 
 export const handleLogin = async (req, res, next) => {
   try {
@@ -21,9 +21,10 @@ export const handleLogin = async (req, res, next) => {
     const { email, password } = validation.data;
 
     // Find user by email
-    const foundUser = await User.findOne({
+    const foundUser = await findUser({
       email: { $regex: `^${email}$`, $options: "i" },
-    }).exec();
+    });
+
     if (!foundUser) {
       return res
         .status(401)
@@ -52,9 +53,8 @@ export const handleLogin = async (req, res, next) => {
       : foundUser.refreshTokens;
 
     if (cookies?.jwt) {
-      const foundToken = await User.findOne({
-        refreshTokens: cookies.jwt,
-      }).exec();
+      const foundToken = await findUser({ refreshTokens: cookies.jwt });
+
       if (!foundToken) {
         console.log("Detected refresh token reuse!");
         newRefreshTokenArray = [];

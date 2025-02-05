@@ -1,4 +1,4 @@
-import User from "../../models/User.js";
+import { findUser } from "../../services/userService.js";
 import { clearJwtCookie } from "../../utils/jwtUtils.js";
 
 export const handleLogout = async (req, res, next) => {
@@ -11,9 +11,7 @@ export const handleLogout = async (req, res, next) => {
     const refreshToken = cookies.jwt;
 
     // Check if the refreshToken exists in the database
-    const foundUser = await User.findOne({
-      refreshTokens: refreshToken,
-    }).exec();
+    const foundUser = await findUser({ refreshTokens: refreshToken });
 
     if (!foundUser) {
       // Token doesn't exist in DB. Clear the cookie and send 204 response.
