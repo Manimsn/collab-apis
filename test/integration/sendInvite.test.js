@@ -1,14 +1,18 @@
+// 🛠 Third-party modules
 import * as chai from "chai";
 import supertest from "supertest";
+import mongoose from "mongoose";
+
+// 🚀 Core application modules
 import app from "../../app.js"; // Import the app
 import Project from "../../models/Project.js";
 import UserProjectMapping from "../../models/UserProjectMapping.js";
-import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
 
-import mongoose from "mongoose";
+// 📌 Configurations & Utilities
+import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
+import { generateAccessToken } from "../../utils/jwtUtils.js";
 import { inviteStatus } from "../../config/constants.js";
 import { messages } from "../../config/messages.js";
-import { generateAccessToken } from "../../utils/jwtUtils.js";
 
 const { expect } = chai;
 

@@ -1,12 +1,16 @@
+// 🛠 Third-party modules
 import * as chai from "chai";
 import supertest from "supertest";
+import mongoose from "mongoose";
+import sinon from "sinon"; // Import sinon for stubbing and mocking
+import { v4 as uuidv4 } from "uuid";
+
+// 🚀 Core application modules
 import app from "../../app.js"; // Import the app
 import UserProjectMapping from "../../models/UserProjectMapping.js";
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
 
-import mongoose from "mongoose";
-import sinon from "sinon"; // Import sinon for stubbing and mocking
-import { v4 as uuidv4 } from "uuid";
+// 📌 Configurations & Utilities
 import { inviteStatus } from "../../config/constants.js";
 import { messages } from "../../config/messages.js";
 import { generateAccessToken } from "../../utils/jwtUtils.js";

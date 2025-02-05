@@ -1,8 +1,12 @@
+// 🛠 Third-party modules
 import * as chai from "chai";
-
 import supertest from "supertest";
+
+// 🚀 Core application modules
 import app from "../../app.js"; // Import the app
 import User from "../../models/User.js"; // Import the User model
+
+// 📌 Configurations & Utilities
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
 
 const { expect } = chai;

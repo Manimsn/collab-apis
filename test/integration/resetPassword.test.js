@@ -1,9 +1,13 @@
+// 🛠 Third-party modules
 import * as chai from "chai";
 import supertest from "supertest";
 import bcrypt from "bcrypt";
 
+// 🚀 Core application modules
 import app from "../../app.js"; // Import your Express app
 import User from "../../models/User.js";
+
+// 📌 Configurations & Utilities
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
 
 const { expect } = chai;
