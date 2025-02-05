@@ -1,22 +1,11 @@
-import bcrypt from "bcrypt";
-import { z } from "zod";
 import UserService from "../../services/userService.js"; // Use ESM import
+import { userSchema } from "../../validations/authValidation.js";
 
 export const handleNewUser = async (req, res, next) => {
   try {
     // Validate input
-    const userSchema = z.object({
-      firstName: z.string().min(1),
-      lastName: z.string().min(1),
-      email: z.string().email(),
-      password: z.string().min(8),
-      plan: z.enum(["FREE", "BASIC", "PREMIUM"]),
-      planType: z.union([z.enum(["Monthly", "Yearly"]), z.null()]).optional(), // Allow null or valid enum
-      designation: z.string().optional(),
-      location: z.string().optional(),
-    });
-
     const validation = userSchema.safeParse(req.body);
+
     if (!validation.success) {
       return res.status(400).json({ errors: validation.error.errors });
     }

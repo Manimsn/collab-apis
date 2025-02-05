@@ -1,18 +1,13 @@
 import bcrypt from "bcrypt";
 import User from "../../models/User.js";
-import { z } from "zod";
+
 import {
   clearJwtCookie,
   generateAccessToken,
   generateRefreshToken,
   setJwtCookie,
 } from "../../utils/jwtUtils.js";
-
-// Validation schema for login request
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
+import { loginSchema } from "../../validations/authValidation.js";
 
 export const handleLogin = async (req, res, next) => {
   try {

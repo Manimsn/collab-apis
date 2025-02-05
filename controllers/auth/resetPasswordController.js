@@ -1,18 +1,7 @@
 import bcrypt from "bcrypt";
-import User from "../../models/User.js";
-import { z } from "zod";
 
-// Validation schema for reset password request
-const resetPasswordSchema = z.object({
-  email: z.string().email(),
-  newPassword: z
-    .string()
-    .min(8)
-    .regex(/[A-Z]/, "Password must include at least one uppercase letter")
-    .regex(/[0-9]/, "Password must include at least one number")
-    .regex(/[@$!%*?&]/, "Password must include at least one special character"),
-  confirmPassword: z.string().min(8),
-});
+import User from "../../models/User.js";
+import { resetPasswordSchema } from "../../validations/authValidation.js";
 
 export const handleResetPassword = async (req, res, next) => {
   try {
