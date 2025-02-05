@@ -36,6 +36,7 @@ export const handleLogin = async (req, res, next) => {
       password,
       foundUser.passwordHash
     );
+
     if (!isPasswordValid) {
       return res
         .status(401)
@@ -44,7 +45,6 @@ export const handleLogin = async (req, res, next) => {
 
     // Generate access and refresh tokens
     const accessToken = generateAccessToken(foundUser);
-
     const newRefreshToken = generateRefreshToken(foundUser);
 
     // Manage refresh tokens array

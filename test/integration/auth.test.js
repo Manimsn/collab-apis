@@ -38,14 +38,16 @@ describe("POST /auth", () => {
     });
   };
 
+  const loginPayload = {
+    email: "john.doe@example.com",
+    password: "Password123",
+  };
+
   // --- Positive Test Cases ---
   it("should successfully login with valid credentials", async () => {
     await createTestUser();
 
-    const res = await supertest(app).post("/auth").send({
-      email: "john.doe@example.com",
-      password: "Password123",
-    });
+    const res = await supertest(app).post("/auth").send(loginPayload);
 
     expect(res.status).to.equal(200);
     expect(res.body.accessToken).to.be.a("string"); // Access token should be returned
@@ -68,15 +70,9 @@ describe("POST /auth", () => {
   it("should handle multiple concurrent logins", async () => {
     await createTestUser();
 
-    const res1 = await supertest(app).post("/auth").send({
-      email: "john.doe@example.com",
-      password: "Password123",
-    });
+    const res1 = await supertest(app).post("/auth").send(loginPayload);
 
-    const res2 = await supertest(app).post("/auth").send({
-      email: "john.doe@example.com",
-      password: "Password123",
-    });
+    const res2 = await supertest(app).post("/auth").send(loginPayload);
 
     expect(res1.status).to.equal(200);
     expect(res2.status).to.equal(200);

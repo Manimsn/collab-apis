@@ -9,6 +9,15 @@ import User from "../../models/User.js"; // Import the User model
 // 📌 Configurations & Utilities
 import { setupTestDB, teardownTestDB } from "../utils/setupTestDB.js";
 import { findUser } from "../../services/userService.js";
+import {
+  anotherValidUser,
+  duplicateEmailUser,
+  hashedPasswordUser,
+  invalidEmailUser,
+  invalidPlanUser,
+  validUser,
+  weakPasswordUser,
+} from "../data/registrationTestData.js";
 
 const { expect } = chai;
 
@@ -27,14 +36,7 @@ describe("POST /register", () => {
 
   // --- Positive Test Case ---
   it("should successfully register a user with valid data", async () => {
-    const res = await supertest(app).post("/register").send({
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      password: "Password123",
-      plan: "BASIC",
-      planType: "Monthly",
-    });
+    const res = await supertest(app).post("/register").send(validUser);
 
     expect(res.status).to.equal(201);
     expect(res.body.message).to.equal("User John Doe created successfully.");
@@ -58,13 +60,7 @@ describe("POST /register", () => {
   });
 
   it("should return 400 for invalid email format", async () => {
-    const res = await supertest(app).post("/register").send({
-      firstName: "John",
-      lastName: "Doe",
-      email: "invalid-email",
-      password: "Password123",
-      plan: "BASIC",
-    });
+    const res = await supertest(app).post("/register").send(invalidEmailUser);
 
     expect(res.status).to.equal(400);
     expect(res.body.errors).to.be.an("array");
@@ -73,13 +69,7 @@ describe("POST /register", () => {
   });
 
   it("should return 400 for weak password", async () => {
-    const res = await supertest(app).post("/register").send({
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      password: "weak",
-      plan: "BASIC",
-    });
+    const res = await supertest(app).post("/register").send(weakPasswordUser);
 
     // Assert the errors array exists and contains the right structure
     expect(res.body.errors).to.be.an("array");
@@ -92,13 +82,7 @@ describe("POST /register", () => {
   });
 
   it("should return 400 for invalid plan", async () => {
-    const res = await supertest(app).post("/register").send({
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      password: "Password123",
-      plan: "INVALID_PLAN",
-    });
+    const res = await supertest(app).post("/register").send(invalidPlanUser);
 
     expect(res.status).to.equal(400);
     expect(res.body.errors).to.be.an("array");
@@ -107,21 +91,9 @@ describe("POST /register", () => {
 
   // --- Duplicate Email ---
   it("should return 409 if email already exists", async () => {
-    await User.create({
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      passwordHash: "hashed-password",
-      plan: "BASIC",
-    });
+    await User.create(hashedPasswordUser);
 
-    const res = await supertest(app).post("/register").send({
-      firstName: "Jane",
-      lastName: "Smith",
-      email: "john.doe@example.com", // Duplicate email
-      password: "Password123",
-      plan: "FREE",
-    });
+    const res = await supertest(app).post("/register").send(duplicateEmailUser);
 
     expect(res.status).to.equal(409);
     expect(res.body.message).to.equal("Email already exists.");
@@ -137,13 +109,7 @@ describe("POST /register", () => {
 
   // --- Database Verification ---
   it("should store default values in the database", async () => {
-    const res = await supertest(app).post("/register").send({
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      password: "Password123",
-      plan: "BASIC",
-    });
+    const res = await supertest(app).post("/register").send(anotherValidUser);
 
     expect(res.status).to.equal(201);
 
@@ -154,13 +120,7 @@ describe("POST /register", () => {
 
   // --- Security ---
   it("should not expose sensitive data in the response", async () => {
-    const res = await supertest(app).post("/register").send({
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      password: "Password123",
-      plan: "BASIC",
-    });
+    const res = await supertest(app).post("/register").send(validUser);
 
     expect(res.status).to.equal(201);
     expect(res.body).to.not.have.property("passwordHash");
