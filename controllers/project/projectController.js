@@ -58,8 +58,6 @@ export const createProject = async (req, res) => {
 
 export const updateProject = async (req, res) => {
   try {
-    
-
     const { projectId } = req.params; // Extract project ID from URL
     const userEmail = req.user.email; // Extract user's email from token
 
@@ -76,7 +74,6 @@ export const updateProject = async (req, res) => {
         errors: validatedData.error.format(),
       });
     }
-    console.log("validatedData", validatedData.data);
 
     // 🔹 Find the project by ID
     const project = await Project.findById(projectId);
@@ -92,9 +89,14 @@ export const updateProject = async (req, res) => {
         .json({ message: "Unauthorized to update this project" });
     }
 
-    // 🔹 Check if the new name already exists (if updating name)
     if (validatedData.data.name && validatedData.data.name === project.name) {
-      console.log("ïf");
+      return res.status(400).json({
+        message: "Project name is already the same. No changes detected.",
+      });
+    }
+
+    // 🔹 Check if the new name already exists (if updating name)
+    if (validatedData.data.name && validatedData.data.name !== project.name) {
       const existingProject = await isProjectNameTaken(validatedData.data.name);
 
       if (existingProject) {
