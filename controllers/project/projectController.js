@@ -58,8 +58,8 @@ export const createProject = async (req, res) => {
 
 export const updateProject = async (req, res) => {
   try {
-    const { projectId } = req.params; // Extract project ID from URL
-    const userEmail = req.user.email; // Extract user's email from token
+    const { projectId } = req.params;
+    const userEmail = req.user.email;
 
     // 🔹 Validate projectId before making a query
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
@@ -75,8 +75,8 @@ export const updateProject = async (req, res) => {
       });
     }
 
-    // 🔹 Find the project by ID
-    const project = await Project.findById(projectId);
+    // 🔹 Find the project by ID (using lean() for performance)
+    const project = await Project.findById(projectId).lean();
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
@@ -89,14 +89,19 @@ export const updateProject = async (req, res) => {
         .json({ message: "Unauthorized to update this project" });
     }
 
+    // 🔹 Prevent updating the same name
     if (validatedData.data.name && validatedData.data.name === project.name) {
       return res.status(400).json({
         message: "Project name is already the same. No changes detected.",
       });
     }
 
-    // 🔹 Check if the new name already exists (if updating name)
-    if (validatedData.data.name && validatedData.data.name !== project.name) {
+    // 🔹 Check if another project already has this name (excluding the current one)
+    if (validatedData.data.name) {
+      // const existingProject = await Project.findOne({
+      //   name: validatedData.data.name,
+      //   _id: { $ne: projectId }, // Exclude current project
+      // });
       const existingProject = await isProjectNameTaken(validatedData.data.name);
 
       if (existingProject) {
@@ -107,13 +112,15 @@ export const updateProject = async (req, res) => {
       }
     }
 
-    // 🔹 Update project fields
-    Object.assign(project, validatedData.data, { updatedAt: Date.now() });
-
-    await project.save();
+    // 🔹 Update project fields (more efficient than Object.assign)
+    await Project.updateOne(
+      { _id: projectId },
+      { ...validatedData.data, updatedAt: Date.now() }
+    );
 
     res.status(200).json({
       message: "Project updated successfully",
+      projectId,
       projectId: project._id,
     });
   } catch (error) {
