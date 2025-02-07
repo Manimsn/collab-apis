@@ -1,12 +1,10 @@
-import { z } from "zod";
 import Project from "../../models/Project.js";
-
-// Define Zod schema for validation
-const projectSchema = z.object({
-  name: z.string().min(3, "Project name must be at least 3 characters long"),
-  description: z.string().optional(),
-  location: z.string().min(3, "Location must be at least 3 characters long"),
-});
+import { isProjectNameTaken } from "../../services/projectService.js";
+import {
+  projectSchema,
+  updateProjectSchema,
+} from "../../validations/projectValidation.js";
+import mongoose from "mongoose";
 
 export const createProject = async (req, res) => {
   try {
@@ -23,9 +21,8 @@ export const createProject = async (req, res) => {
     const email = req.user.email; // Extract userId from token
 
     // ✅ Check if the project name already exists
-    const existingProject = await Project.findOne({
-      name: validatedData.data.name,
-    });
+    const existingProject = await isProjectNameTaken(validatedData.data.name);
+
     if (existingProject) {
       return res.status(400).json({
         message: "Project name already exists. Please choose a different name.",
@@ -58,3 +55,4 @@ export const createProject = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
