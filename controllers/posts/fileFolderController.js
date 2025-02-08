@@ -28,7 +28,7 @@ export const createFilesWithPost = async (req, res) => {
       description,
       files,
     } = validatedData.data;
-    console.log(validatedData.data);
+    // console.log(validatedData.data);
 
     // ✅ Create a new Post record
     const newPost = new Post({
@@ -51,7 +51,6 @@ export const createFilesWithPost = async (req, res) => {
     }));
 
     const result = await FileFolder.insertMany(filesWithPostId);
-    console.log("result", result);
 
     res.status(201).json({
       message: "Files/Folders created successfully",
