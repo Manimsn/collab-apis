@@ -27,3 +27,17 @@ export const inviteStatus = {
   REVOKED: "revoked",
   EXPIRED: "expired",
 };
+
+export const categoryEnum = [
+  "Drawings",
+  "Images",
+  "Panoramas",
+  "Renderings",
+  "SideBySide",
+  "Videos",
+  "Specification",
+  "MoodBoard",
+  "3DModels",
+  "Survey",
+  "Files",
+];
