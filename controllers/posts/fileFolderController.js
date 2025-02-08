@@ -1,9 +1,11 @@
 import { createFilesWithPostSchema } from "../../validations/fileFolderValidation.js";
-// import * as fileFolderService from "../../services/fileFolderService.js";
-// import mongoose from "mongoose";
+import { updatePostSchema } from "../../validations/postValidation.js";
 
 import Post from "../../models/postModel.js";
 import FileFolder from "../../models/fileFolderModel.js";
+
+import { updatePostWithFiles } from "../../services/postService.js";
+import { isUserAuthorized } from "../../middlewares/authorizationService.js";
 
 export const createFilesWithPost = async (req, res) => {
   try {
@@ -63,33 +65,52 @@ export const createFilesWithPost = async (req, res) => {
   }
 };
 
-// export const updateFileFolder = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     if (!mongoose.Types.ObjectId.isValid(id))
-//       return res.status(400).json({ message: "Invalid ID format" });
+export const updatePost = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const email = req.user.email;
+    const postId = req.params.postId;
 
-//     const validatedData = fileFolderArraySchema.safeParse([req.body]);
-//     if (!validatedData.success) {
-//       return res.status(400).json({
-//         message: "Validation failed",
-//         errors: validatedData.error.format(),
-//       });
-//     }
+    // Validate request payload using Zod
+    const validatedData = updatePostSchema.safeParse(req.body);
+    if (!validatedData.success) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: validatedData.error.format(),
+      });
+    }
 
-//     const updatedFileFolder = await fileFolderService.updateFileFolder(
-//       id,
-//       validatedData.data[0]
-//     );
-//     if (!updatedFileFolder)
-//       return res.status(404).json({ message: "File/Folder not found" });
+    const { description, taggedUsers, files, projectId, category } =
+      validatedData.data;
 
-//     res.status(200).json({
-//       message: "File/Folder updated successfully",
-//       id: updatedFileFolder._id,
-//     });
-//   } catch (error) {
-//     console.error("Error updating file/folder:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
+    // Fetch file IDs from files array
+    const fileIds = files ? files.map((f) => f._id) : [];
+
+    // Authorization check
+    const isAuthorized = await isUserAuthorized(
+      userId,
+      email,
+      projectId,
+      category,
+      fileIds
+    );
+
+    if (!isAuthorized) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to update this post" });
+    }
+
+    // Call service function
+    const result = await updatePostWithFiles(postId, {
+      description,
+      taggedUsers,
+      files,
+    });
+
+    return res.status(result.status).json({ message: result.message });
+  } catch (error) {
+    console.error("Update Post Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
