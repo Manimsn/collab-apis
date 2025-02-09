@@ -26,7 +26,7 @@ import {
 export const sendInvite = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { email, category, role } = req.body;
+    const { email, category, role, fileOrFolderAccess } = req.body;
     const { userId, plan } = req.user;
 
     // Validate request payload
@@ -56,9 +56,10 @@ export const sendInvite = async (req, res) => {
     }
 
     // Validate max members limit for project-level invite
-    if (!category) {
+    if (!category && !fileOrFolderAccess) {
       const totalProjectMembers = await countProjectMembers(projectId);
       console.log("totalProjectMembers", totalProjectMembers);
+
       if (totalProjectMembers >= planLimits[plan].maxMembersPerProject) {
         return res.status(403).json({
           message: messages.PROJECT.MAX_MEMBERS_REACHED(
@@ -70,12 +71,13 @@ export const sendInvite = async (req, res) => {
     }
 
     // Validate max members limit for category-level(External Collaborators) invite
-    if (category) {
+    if (category && !fileOrFolderAccess) {
       const totalCategoryMembers = await countCategoryMembers(
         projectId,
         category
       );
       console.log("totalCategoryMembers", totalCategoryMembers);
+
       if (
         totalCategoryMembers >= planLimits[plan].maxMembersPerProjectExternal
       ) {
@@ -88,16 +90,22 @@ export const sendInvite = async (req, res) => {
       }
     }
 
+    // Determine the type of access request
+    const isProjectAccess = !category && !fileOrFolderAccess;
+    const isCategoryAccess = category && !fileOrFolderAccess;
+    const isFileOrFolderAccess = category && fileOrFolderAccess;
+
     // Check if user already has full project access
     const existingUser = await checkUserProjectAccess(projectId, email);
     console.log("existingUser", existingUser);
+
     if (existingUser?.role) {
       return res.status(400).json({ message: messages.INVITE.ALREADY_MEMBER });
     }
 
     // Check if user already has category-level access
     if (
-      category &&
+      (isCategoryAccess || isFileOrFolderAccess) &&
       existingUser?.categoryAccess?.some((c) => c.category === category)
     ) {
       return res
@@ -105,23 +113,53 @@ export const sendInvite = async (req, res) => {
         .json({ message: messages.INVITE.CATEGORY_ALREADY_HAS_ACCESS });
     }
 
-    // Create or update the invite in the controller
+    // Create or update the invite
     let invite = existingUser;
-
     if (invite) {
-      if (!category && invite.status === inviteStatus.ACCEPTED) {
-        // Only prevent updates if the invite is already accepted for full project access
+      if (isProjectAccess && invite.status === inviteStatus.ACCEPTED) {
         return res
           .status(400)
           .json({ message: messages.INVITE.ALREADY_MEMBER });
       }
+
+      if (isProjectAccess && invite.status === inviteStatus.INVITED) {
+        return res
+          .status(400)
+          .json({ message: messages.INVITE.ALREADY_MEMBER });
+      }
+
       invite.inviteToken = uuidv4();
       invite.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
       invite.updatedAt = new Date();
 
-      if (category) {
-        // Append the new category and role if it's a category-level invite
+      if (isCategoryAccess) {
         invite.categoryAccess.push({ category, role });
+      }
+
+      if (isFileOrFolderAccess) {
+        let fileFolderAccess = invite.fileOrFolderAccess.find(
+          (entry) => entry.category === category
+        );
+
+        if (!fileFolderAccess) {
+          invite.fileOrFolderAccess.push({
+            category,
+            files: fileOrFolderAccess.map(({ fileOrFolderId, role }) => ({
+              fileOrFolderId,
+              role,
+            })),
+          });
+        } else {
+          fileOrFolderAccess.forEach(({ fileOrFolderId, role }) => {
+            const alreadyExists = fileFolderAccess.files.some(
+              (file) => file.fileOrFolderId.toString() === fileOrFolderId
+            );
+
+            if (!alreadyExists) {
+              fileFolderAccess.files.push({ fileOrFolderId, role });
+            }
+          });
+        }
       }
     } else {
       invite = new UserProjectMapping({
@@ -130,7 +168,21 @@ export const sendInvite = async (req, res) => {
         createdBy: userId,
         inviteToken: uuidv4(),
         status: "invited",
-        ...(category ? { categoryAccess: [{ category, role }] } : { role }),
+        ...(isCategoryAccess ? { categoryAccess: [{ category, role }] } : {}),
+        ...(isFileOrFolderAccess
+          ? {
+              fileOrFolderAccess: [
+                {
+                  category,
+                  files: fileOrFolderAccess.map(({ fileOrFolderId, role }) => ({
+                    fileOrFolderId,
+                    role,
+                  })),
+                },
+              ],
+            }
+          : {}),
+        ...(isProjectAccess ? { role } : {}),
       });
     }
 

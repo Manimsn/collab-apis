@@ -20,6 +20,14 @@ export const messages = {
     REVOKED_SUCCESS: "Invitation revoked successfully.",
     NOT_FOUND_OR_USED: "Invite not found or already used.",
     CATEGORY_ALREADY_HAS_ACCESS: "User already has access to this category.",
+    INVALID_EMAIL_FORMAT: "Invalid email format.",
+    FILE_OR_FOLDER_REQUIRED: "File or Folder ID is required.",
+    CATEGORY_REQUIRED_FOR_FILE_OR_FOLDER:
+      "Category is required when assigning file or folder access.",
+    ADMIN_NOT_ALLOWED: (level) =>
+      `ADMIN role is not allowed for ${level}-level access.`,
+    SOME_FILES_OR_FOLDERS_GRANTED_ACCESS: (alreadyAccessible, newlyAdded) =>
+      `${alreadyAccessible} already had access, ${newlyAdded} were given access.`,
   },
   AUTH: {
     UNAUTHORIZED: "Unauthorized: No email found in token.",

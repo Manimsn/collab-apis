@@ -23,6 +23,29 @@ export const planLimits = {
 };
 
 // 🔹 User Roles
+export const OWNERROLE = {
+  OWNER: "OWNER",
+};
+
+export const ADMINROLE = {
+  ADMIN: "ADMIN",
+};
+export const ROLES = {
+  VIEWER: "VIEWER",
+  EDITOR: "EDITOR",
+  COMMENTER: "COMMENTER",
+};
+
+export const USERROLES = {
+  ...OWNERROLE,
+  ...ADMINROLE,
+  ...ROLES,
+};
+export const NON_OWNER_ROLES = {
+  ...ADMINROLE,
+  ...ROLES,
+};
+
 export const userRoles = {
   OWNER: "OWNER",
   ADMIN: "ADMIN",
