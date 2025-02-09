@@ -28,6 +28,8 @@ export const messages = {
       `ADMIN role is not allowed for ${level}-level access.`,
     SOME_FILES_OR_FOLDERS_GRANTED_ACCESS: (alreadyAccessible, newlyAdded) =>
       `${alreadyAccessible} already had access, ${newlyAdded} were given access.`,
+    ALREADY_HAS_FILE_OR_FOLDER_ACCESS: (alreadyExistsCount) =>
+      `${alreadyExistsCount} Files already had access`,
   },
   AUTH: {
     UNAUTHORIZED: "Unauthorized: No email found in token.",

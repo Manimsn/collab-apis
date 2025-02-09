@@ -37,7 +37,6 @@ export const sendInvite = async (req, res) => {
 
     // Fetch project and validate ownership
     const project = await checkProjectExists(projectId);
-    console.log("project", project);
     if (!project) {
       return res.status(404).json({ message: messages.PROJECT.NOT_FOUND });
     }
@@ -58,8 +57,6 @@ export const sendInvite = async (req, res) => {
     // Validate max members limit for project-level invite
     if (!category && !fileOrFolderAccess) {
       const totalProjectMembers = await countProjectMembers(projectId);
-      console.log("totalProjectMembers", totalProjectMembers);
-
       if (totalProjectMembers >= planLimits[plan].maxMembersPerProject) {
         return res.status(403).json({
           message: messages.PROJECT.MAX_MEMBERS_REACHED(
@@ -70,14 +67,12 @@ export const sendInvite = async (req, res) => {
       }
     }
 
-    // Validate max members limit for category-level(External Collaborators) invite
+    // Validate max members limit for category-level invite
     if (category && !fileOrFolderAccess) {
       const totalCategoryMembers = await countCategoryMembers(
         projectId,
         category
       );
-      console.log("totalCategoryMembers", totalCategoryMembers);
-
       if (
         totalCategoryMembers >= planLimits[plan].maxMembersPerProjectExternal
       ) {
@@ -97,7 +92,6 @@ export const sendInvite = async (req, res) => {
 
     // Check if user already has full project access
     const existingUser = await checkUserProjectAccess(projectId, email);
-    console.log("existingUser", existingUser);
 
     if (existingUser?.role) {
       return res.status(400).json({ message: messages.INVITE.ALREADY_MEMBER });
@@ -115,6 +109,10 @@ export const sendInvite = async (req, res) => {
 
     // Create or update the invite
     let invite = existingUser;
+
+    let newFiles = [];
+    let newFilesCount = 0;
+    let alreadyExistsCount = 0;
     if (invite) {
       if (isProjectAccess && invite.status === inviteStatus.ACCEPTED) {
         return res
@@ -149,6 +147,7 @@ export const sendInvite = async (req, res) => {
               role,
             })),
           });
+          newFiles = fileOrFolderAccess;
         } else {
           fileOrFolderAccess.forEach(({ fileOrFolderId, role }) => {
             const alreadyExists = fileFolderAccess.files.some(
@@ -157,7 +156,20 @@ export const sendInvite = async (req, res) => {
 
             if (!alreadyExists) {
               fileFolderAccess.files.push({ fileOrFolderId, role });
+              newFiles.push({ fileOrFolderId, role });
+              newFilesCount++;
+            } else {
+              alreadyExistsCount++;
             }
+          });
+        }
+
+        if (newFiles.length === 0) {
+          return res.status(400).json({
+            message:
+              messages.INVITE.ALREADY_HAS_FILE_OR_FOLDER_ACCESS(
+                alreadyExistsCount
+              ),
           });
         }
       }
@@ -185,7 +197,7 @@ export const sendInvite = async (req, res) => {
         ...(isProjectAccess ? { role } : {}),
       });
     }
-
+    console.log("Checking");
     await invite.save();
     const inviteLink = `https://your-app.com/invite?token=${invite.inviteToken}`;
     await sendEmail(
@@ -194,9 +206,18 @@ export const sendInvite = async (req, res) => {
       `Click here to join: ${inviteLink}`
     );
 
+    if (alreadyExistsCount > 0 && newFilesCount > 0) {
+      return res.status(200).json({
+        message: messages.INVITE.SOME_FILES_OR_FOLDERS_GRANTED_ACCESS(
+          alreadyExistsCount,
+          newFilesCount
+        ),
+      });
+    }
+
     return res.json({ message: messages.INVITE.SENT_SUCCESS, inviteLink });
   } catch (error) {
-    console.log("carch", error);
+    console.log(error);
     return res.status(500).json({ error: error.message });
   }
 };

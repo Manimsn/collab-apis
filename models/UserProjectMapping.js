@@ -12,7 +12,9 @@ const UserProjectMappingSchema = new mongoose.Schema({
     type: String,
     enum: ["ADMIN", "VIEWER", "EDITOR", "COMMENTER"],
     required: function () {
-      return this.categoryAccess.length === 0; // role is required only if categoryAccess is empty
+      return (
+        this.categoryAccess.length === 0 && this.fileOrFolderAccess.length === 0
+      );
     },
   },
 
