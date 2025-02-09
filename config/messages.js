@@ -7,8 +7,9 @@ export const messages = {
       `Your plan (${plan}) allows only ${max} projects.`,
     MAX_MEMBERS_REACHED: (plan, max) =>
       `Your plan (${plan}) allows only ${max} members per project.`,
+    MAX_CATEGORY_MEMBERS_REACHED: (plan, max) =>
+      `Your plan (${plan}) allows only ${max} category-level members per project.`,
   },
-
   INVITE: {
     ALREADY_MEMBER: "User is already a project member.",
     SENT_SUCCESS: "Invitation sent successfully!",
@@ -18,8 +19,8 @@ export const messages = {
     SUCCESSFULLY_JOINED: "You have successfully joined the project!",
     REVOKED_SUCCESS: "Invitation revoked successfully.",
     NOT_FOUND_OR_USED: "Invite not found or already used.",
+    CATEGORY_ALREADY_HAS_ACCESS: "User already has access to this category.",
   },
-
   AUTH: {
     UNAUTHORIZED: "Unauthorized: No email found in token.",
     FORBIDDEN: "You do not have permission to perform this action.",

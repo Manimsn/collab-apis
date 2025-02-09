@@ -12,118 +12,140 @@ import {
 import sendEmail from "../../utils/sendEmail.js";
 import { inviteStatus, planLimits } from "../../config/constants.js";
 import { messages } from "../../config/messages.js";
+import {
+  checkProjectExists,
+  checkUserProjectAccess,
+  countCategoryMembers,
+  countProjectMembers,
+} from "../../services/inviteService.js";
 
 /**
  * Send an Invite
  */
+
 export const sendInvite = async (req, res) => {
-  const { projectId } = req.params;
-  const { email, role } = req.body;
-  const { userId, email: userEmail, plan } = req?.user; // Extract user details from token
-
-  // Validate request
-  const validation = inviteSchema.safeParse({ email, role });
-  if (!validation.success) {
-    return res.status(400).json({ error: validation.error.format() });
-  }
-
   try {
-    // Fetch project details to check owner
-    const project = await Project.findById({ _id: projectId });
+    const { projectId } = req.params;
+    const { email, category, role } = req.body;
+    const { userId, plan } = req.user;
 
+    // Validate request payload
+    const validation = inviteSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: validation.error.format() });
+    }
+
+    // Fetch project and validate ownership
+    const project = await checkProjectExists(projectId);
+    console.log("project", project);
     if (!project) {
-      // return res.status(404).json({ message: "Project not found." });
       return res.status(404).json({ message: messages.PROJECT.NOT_FOUND });
     }
 
-    // 🔹 Validate if the logged-in user is the project owner
     if (userId !== project.createdBy.toString()) {
-      // 🔹 If not the owner, check if the user is an ADMIN in UserProjectMapping
-      // const adminEntry = await UserProjectMapping.findOne({
-      //   projectId,
-      //   email: req.user.email, // Match the logged-in user's email
-      //   role: userRoles.ADMIN,
-      // });
-
-      // if (!adminEntry) {
-      //   return res.status(403).json({
-      //     message: "Only the project owner or an admin can invite members.",
-      //   });
-      // }
-      return res.status(403).json({
-        message: messages.PROJECT.INVITE_PERMISSION_ERROR,
-      });
+      return res
+        .status(403)
+        .json({ message: messages.PROJECT.INVITE_PERMISSION_ERROR });
     }
 
-    // 🔹 Check if the user has exceeded their project limit
-    // const userProjectsCount = await Project.countDocuments({
-    //   createdBy: userId,
-    // });
-
-    // if (userProjectsCount >= planLimits[plan].maxProjects) {
-    //   return res.status(403).json({
-    //     // message: `Your plan (${plan}) allows only ${planLimits[plan].maxProjects} projects.`,
-    //     message: messages.PROJECT.MAX_PROJECTS_REACHED(
-    //       plan,
-    //       planLimits[plan].maxProjects
-    //     ),
-    //   });
-    // }
-
-    // 🔹 Check if the project has reached the max member limit
-    const memberCount = await UserProjectMapping.countDocuments({ projectId });
-    // console.log("memberCount", memberCount);
-
-    if (memberCount >= planLimits[plan].maxMembersPerProject) {
-      return res.status(403).json({
-        message: messages.PROJECT.MAX_MEMBERS_REACHED(
-          plan,
-          planLimits[plan].maxMembersPerProject
-        ),
-      });
+    // Prevent owner from inviting themselves
+    if (project.ownerEmail.toString() === email) {
+      return res
+        .status(400)
+        .json({ message: messages.PROJECT.INVITE_OWNER_ERROR });
     }
 
-    // 🔹 Prevent inviting the project owner
-    if (project.ownerEmail === email) {
-      return res.status(400).json({
-        message: messages.PROJECT.INVITE_OWNER_ERROR,
-      });
+    // Validate max members limit for project-level invite
+    if (!category) {
+      const totalProjectMembers = await countProjectMembers(projectId);
+      console.log("totalProjectMembers", totalProjectMembers);
+      if (totalProjectMembers >= planLimits[plan].maxMembersPerProject) {
+        return res.status(403).json({
+          message: messages.PROJECT.MAX_MEMBERS_REACHED(
+            plan,
+            planLimits[plan].maxMembersPerProject
+          ),
+        });
+      }
     }
 
-    let invite = await UserProjectMapping.findOne({ projectId, email });
+    // Validate max members limit for category-level(External Collaborators) invite
+    if (category) {
+      const totalCategoryMembers = await countCategoryMembers(
+        projectId,
+        category
+      );
+      console.log("totalCategoryMembers", totalCategoryMembers);
+      if (
+        totalCategoryMembers >= planLimits[plan].maxMembersPerProjectExternal
+      ) {
+        return res.status(403).json({
+          message: messages.PROJECT.MAX_CATEGORY_MEMBERS_REACHED(
+            plan,
+            planLimits[plan].maxMembersPerProjectExternal
+          ),
+        });
+      }
+    }
+
+    // Check if user already has full project access
+    const existingUser = await checkUserProjectAccess(projectId, email);
+    console.log("existingUser", existingUser);
+    if (existingUser?.role) {
+      return res.status(400).json({ message: messages.INVITE.ALREADY_MEMBER });
+    }
+
+    // Check if user already has category-level access
+    if (
+      category &&
+      existingUser?.categoryAccess?.some((c) => c.category === category)
+    ) {
+      return res
+        .status(400)
+        .json({ message: messages.INVITE.CATEGORY_ALREADY_HAS_ACCESS });
+    }
+
+    // Create or update the invite in the controller
+    let invite = existingUser;
+
     if (invite) {
-      if (invite.status === inviteStatus.ACCEPTED) {
+      if (!category && invite.status === inviteStatus.ACCEPTED) {
+        // Only prevent updates if the invite is already accepted for full project access
         return res
           .status(400)
           .json({ message: messages.INVITE.ALREADY_MEMBER });
       }
-
       invite.inviteToken = uuidv4();
-      invite.status = inviteStatus.INVITED;
       invite.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
       invite.updatedAt = new Date();
+
+      if (category) {
+        // Append the new category and role if it's a category-level invite
+        invite.categoryAccess.push({ category, role });
+      }
     } else {
       invite = new UserProjectMapping({
         email,
         projectId,
-        role,
         createdBy: userId,
         inviteToken: uuidv4(),
+        status: "invited",
+        ...(category ? { categoryAccess: [{ category, role }] } : { role }),
       });
     }
 
     await invite.save();
-
     const inviteLink = `https://your-app.com/invite?token=${invite.inviteToken}`;
     await sendEmail(
       email,
       "Project Invitation",
       `Click here to join: ${inviteLink}`
     );
-    res.json({ message: messages.INVITE.SENT_SUCCESS, inviteLink });
+
+    return res.json({ message: messages.INVITE.SENT_SUCCESS, inviteLink });
   } catch (error) {
-    console.log("projectId---------error", error);
-    res.status(500).json({ error: error.message });
+    console.log("carch", error);
+    return res.status(500).json({ error: error.message });
   }
 };
 

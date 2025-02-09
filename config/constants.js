@@ -1,9 +1,25 @@
 // 🔹 Plan Limits for Different Subscription Plans
 export const planLimits = {
-  FREE: { maxProjects: 2, maxMembersPerProject: 2 },
-  BASIC: { maxProjects: 5, maxMembersPerProject: 5 },
-  PREMIUM: { maxProjects: 10, maxMembersPerProject: 10 },
-  ENTERPRISE: { maxProjects: Infinity, maxMembersPerProject: Infinity }, // No limits
+  FREE: {
+    maxProjects: 2,
+    maxMembersPerProject: 2,
+    maxMembersPerProjectExternal: 5,
+  },
+  BASIC: {
+    maxProjects: 5,
+    maxMembersPerProject: 5,
+    maxMembersPerProjectExternal: 10,
+  },
+  PREMIUM: {
+    maxProjects: 10,
+    maxMembersPerProject: 10,
+    maxMembersPerProjectExternal: 15,
+  },
+  ENTERPRISE: {
+    maxProjects: Infinity,
+    maxMembersPerProject: Infinity,
+    maxMembersPerProjectExternal: 20,
+  }, // No limits
 };
 
 // 🔹 User Roles

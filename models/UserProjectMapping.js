@@ -11,7 +11,9 @@ const UserProjectMappingSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ["ADMIN", "VIEWER", "EDITOR", "COMMENTER"],
-    required: true,
+    required: function () {
+      return this.categoryAccess.length === 0; // role is required only if categoryAccess is empty
+    },
   },
 
   // Category-Level Access
