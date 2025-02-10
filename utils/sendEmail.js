@@ -9,15 +9,16 @@ const client = new SendMailClient({
 });
 
 /**
- * Sends an email using ZeptoMail.
+ * Sends an email using ZeptoMail's template.
  * @param {string} toEmail - Recipient email.
  * @param {string} toName - Recipient name.
- * @param {string} subject - Email subject.
- * @param {string} htmlBody - Email HTML content.
+ * @param {string} templateKey - ZeptoMail template key.
+ * @param {object} mergeInfo - Merge information for the template.
  */
-const sendEmail = async (toEmail, toName, subject, htmlBody) => {
+const sendEmail = async (toEmail, toName, templateKey, mergeInfo = {}) => {
   try {
-    const response = await client.sendMail({
+    const response = await client.sendMailWithTemplate({
+      mail_template_key: process.env.ZEPTO_MAIL_TEMPLATE_KEY,
       from: {
         address: process.env.ZEPTO_FROM_EMAIL,
         name: process.env.ZEPTO_FROM_NAME,
@@ -30,8 +31,7 @@ const sendEmail = async (toEmail, toName, subject, htmlBody) => {
           },
         },
       ],
-      subject,
-      htmlbody: htmlBody,
+      merge_info: mergeInfo,
     });
 
     console.log(`📧 Email sent successfully to ${toEmail}`);

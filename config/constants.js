@@ -30,28 +30,22 @@ export const OWNERROLE = {
 export const ADMINROLE = {
   ADMIN: "ADMIN",
 };
+
 export const ROLES = {
   VIEWER: "VIEWER",
   EDITOR: "EDITOR",
   COMMENTER: "COMMENTER",
 };
 
-export const USERROLES = {
-  ...OWNERROLE,
-  ...ADMINROLE,
-  ...ROLES,
-};
 export const NON_OWNER_ROLES = {
   ...ADMINROLE,
   ...ROLES,
 };
 
-export const userRoles = {
-  OWNER: "OWNER",
-  ADMIN: "ADMIN",
-  VIEWER: "VIEWER",
-  EDITOR: "EDITOR",
-  COMMENTER: "COMMENTER",
+export const USERROLES = {
+  ...OWNERROLE,
+  ...ADMINROLE,
+  ...ROLES,
 };
 
 // 🔹 Other Common Variables (Modify as Needed)

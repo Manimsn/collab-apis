@@ -99,7 +99,7 @@ export const sendInvite = async (req, res) => {
 
     // Check if user already has category-level access
     if (
-      (isCategoryAccess || isFileOrFolderAccess) &&
+      (isCategoryAccess || !isFileOrFolderAccess) &&
       existingUser?.categoryAccess?.some((c) => c.category === category)
     ) {
       return res
@@ -197,7 +197,7 @@ export const sendInvite = async (req, res) => {
         ...(isProjectAccess ? { role } : {}),
       });
     }
-    console.log("Checking");
+    
     await invite.save();
     const inviteLink = `https://your-app.com/invite?token=${invite.inviteToken}`;
     await sendEmail(
