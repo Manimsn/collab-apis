@@ -60,6 +60,13 @@ export const inviteStatus = {
   REVOKED: "revoked",
   EXPIRED: "expired",
 };
+export const FILETYPE = {
+  POST: "POST",
+  FOLDER: "FOLDER",
+  LINK: "LINK",
+};
+
+export const FileTypeEnum = ["POST", "FOLDER", "LINK"];
 
 export const categoryEnum = [
   "Drawings",
