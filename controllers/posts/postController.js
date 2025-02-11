@@ -117,9 +117,8 @@ export const updatePostFolder = async (req, res) => {
     }
 
     const parsedBody = validationResult.data;
-    // console.log("parsedBody", parsedBody);
-
     const updateFields = {};
+
     if (parsedBody.description?.trim()) {
       updateFields.description = parsedBody.description.trim();
     }
@@ -128,7 +127,7 @@ export const updatePostFolder = async (req, res) => {
       updateFields.taggedEmails = parsedBody.taggedUsers;
     }
 
-    // 🔹 Start transaction only if not running in test environment
+    // Start transaction only if not running in test environment
     if (process.env.NODE_ENV !== "test") {
       session = await mongoose.startSession();
       session.startTransaction();
@@ -138,7 +137,6 @@ export const updatePostFolder = async (req, res) => {
     const post = await PostFolder.findById(postId).session(
       session || undefined
     );
-
     if (!post) {
       if (session) {
         await session.abortTransaction();
@@ -147,7 +145,31 @@ export const updatePostFolder = async (req, res) => {
       return res.status(404).json({ error: "Post not found" });
     }
 
-    // Handle new file uploads
+    // ✅ STEP 1: Handle file deletions separately
+    if (parsedBody.deleteFileIds) {
+      post.files = post.files.filter(
+        (file) => !parsedBody.deleteFileIds.includes(file._id.toString())
+      );
+      await post.save({ session: session || undefined }); // Save after deletion
+    }
+
+    // ✅ STEP 2: Handle updating existing files separately
+    if (parsedBody.existingFiles) {
+      parsedBody.existingFiles.forEach((updatedFile) => {
+        const fileIndex = post.files.findIndex(
+          (file) => file._id.toString() === updatedFile._id
+        );
+        if (fileIndex !== -1) {
+          post.files[fileIndex] = {
+            ...post.files[fileIndex].toObject(),
+            ...updatedFile,
+          };
+        }
+      });
+      await post.save({ session: session || undefined }); // Save after updates
+    }
+
+    // ✅ STEP 3: Handle adding new files separately
     if (parsedBody.newUploadedFiles) {
       if (post.type !== "POST") {
         if (session) {
@@ -167,41 +189,18 @@ export const updatePostFolder = async (req, res) => {
           error: "A post cannot have more than 20 files",
         });
       }
-      // post.files.push(...parsedBody.newUploadedFiles);
-      updateFields.$push = { files: { $each: parsedBody.newUploadedFiles } };
+      post.files.push(...parsedBody.newUploadedFiles);
+      await post.save({ session: session || undefined }); // Save after adding files
     }
 
-    // Handle updating existing files
-    if (parsedBody.existingFiles) {
-      parsedBody.existingFiles.forEach((updatedFile) => {
-        const fileIndex = post.files.findIndex(
-          (file) => file._id.toString() === updatedFile._id
-        );
-        if (fileIndex !== -1) {
-          updateFields[`files.${fileIndex}`] = updatedFile; // Update specific index
-        }
-      });
-    }
-
-    // Handle file deletions
-    if (parsedBody.deleteFileIds) {
-      updateFields.$pull = {
-        files: { _id: { $in: parsedBody.deleteFileIds } },
-      };
-    }
-
-    // Apply the field updates
+    // Apply other field updates
     const updatedPost = await PostFolder.findByIdAndUpdate(
       postId,
-      // { $set: updateFields },
-      updateFields,
+      { $set: updateFields },
       { new: true, session: session || undefined }
     );
 
-    // Save the updated document
-    const bewPost = await post.save({ session: session || undefined });
-  
-    // 🔹 Commit transaction only if it was started
+    // Commit transaction if it was started
     if (session) {
       await session.commitTransaction();
       session.endSession();
@@ -211,7 +210,7 @@ export const updatePostFolder = async (req, res) => {
       .status(200)
       .json({ message: "Post updated successfully", post: updatedPost });
   } catch (error) {
-    // console.error("Update Error:", error);
+    console.error("Update Error:", error);
     if (session) {
       await session.abortTransaction();
       session.endSession();
