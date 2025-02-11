@@ -11,8 +11,8 @@ const fileSchema = new mongoose.Schema(
     //   required: true,
     //   ref: "User",
     // },
-  },
-  { _id: false } // Prevents MongoDB from creating an unnecessary `_id` for each file
+  }
+  // { _id: false } // Prevents MongoDB from creating an unnecessary `_id` for each file
 );
 
 const postSchema = new mongoose.Schema(
@@ -49,6 +49,19 @@ const postSchema = new mongoose.Schema(
       ref: "Post", // Points to another post acting as a folder
       default: null,
     },
+    taggedEmails: {
+      type: [String],
+      validate: {
+        validator: function (emails) {
+          return emails.every((email) =>
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+          );
+        },
+        message: "Each tagged email must be a valid email address.",
+      },
+      default: [],
+    },
+
     files: {
       type: [fileSchema],
       validate: {

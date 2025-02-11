@@ -4,6 +4,8 @@ import { isUserAuthorized } from "../../middlewares/authorizationService.js";
 import PostFolder from "../../models/postFolderModel.js";
 import { checkProjectExists } from "../../services/inviteService.js";
 import { createPostOrFolderSchema } from "../../validations/postValidation.js";
+import { updateNewPostSchema } from "../../validations/updatePostValidataion.js";
+import mongoose from "mongoose";
 
 export const createPostOrFolder = async (req, res, next) => {
   try {
@@ -89,7 +91,105 @@ export const createPostOrFolder = async (req, res, next) => {
       postId: newPostOrFolder._id,
     });
   } catch (error) {
-    console.error("Error creating post/folder:", error);
+    // console.error("Error creating post/folder:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const updatePostFolder = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { userId, email } = req.user; // Extract userId from token
+    const { postId } = req.params;
+
+    // Validate `postId`
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({ error: "Invalid postId format" });
+    }
+
+    // Validate request body with Zod
+    const { data: parsedBody, success } = updateNewPostSchema.safeParse(
+      req.body
+    );
+    console.log("success", success);
+    console.log("parsedBody", parsedBody);
+
+    if (!success) {
+      // console.log("validatedData", validatedData.error);
+
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: parsedBody.error.format(),
+      });
+    }
+
+    const updateFields = {};
+
+    if (parsedBody.description) {
+      updateFields.description = parsedBody.description;
+    }
+
+    if (parsedBody.taggedUsers) {
+      console.log("taggedUsers", parsedBody?.taggedUsers);
+      updateFields.taggedEmails = parsedBody.taggedUsers;
+    }
+
+    // Fetch the existing post
+    const post = await PostFolder.findById({ _id: postId }).session(session);
+    console.log("post", post);
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    // Handle new file uploads
+    if (parsedBody.newUploadedFiles) {
+      if (post.type !== "POST") {
+        return res
+          .status(400)
+          .json({ error: "Files can only be added to a post, not a folder" });
+      }
+      if (post.files.length + parsedBody.newUploadedFiles.length > 20) {
+        return res
+          .status(400)
+          .json({ error: "A post cannot have more than 20 files" });
+      }
+      post.files.push(...parsedBody.newUploadedFiles);
+    }
+
+    // Handle updating existing files
+    if (parsedBody.existingFiles) {
+      parsedBody.existingFiles.forEach((updatedFile) => {
+        const fileIndex = post.files.findIndex(
+          (file) => file._id.toString() === updatedFile._id
+        );
+        if (fileIndex !== -1) {
+          post.files[fileIndex] = {
+            ...post.files[fileIndex].toObject(),
+            ...updatedFile,
+          };
+        }
+      });
+    }
+
+    // Handle file deletions
+    if (parsedBody.deleteFileIds) {
+      post.files = post.files.filter(
+        (file) => !parsedBody.deleteFileIds.includes(file._id.toString())
+      );
+    }
+
+    // Save the updated document
+    await post.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(200).json({ message: "Post updated successfully", post });
+  } catch (error) {
+    console.log("error", error);
+    // await session.abortTransaction();
+    // session.endSession();
+    return res.status(500).json({ error: error.message });
   }
 };
