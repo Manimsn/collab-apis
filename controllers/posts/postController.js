@@ -97,10 +97,9 @@ export const createPostOrFolder = async (req, res, next) => {
 };
 
 export const updatePostFolder = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  let session;
   try {
-    const { userId, email } = req.user; // Extract userId from token
+    const { userId, email } = req.user;
     const { postId } = req.params;
 
     // Validate `postId`
@@ -110,7 +109,6 @@ export const updatePostFolder = async (req, res) => {
 
     // Validate request body with Zod
     const validationResult = updateNewPostSchema.safeParse(req.body);
-
     if (!validationResult.success) {
       return res.status(400).json({
         message: "Validation failed",
@@ -119,46 +117,58 @@ export const updatePostFolder = async (req, res) => {
     }
 
     const parsedBody = validationResult.data;
-    console.log("Parsed Body:", parsedBody);
+    // console.log("parsedBody", parsedBody);
 
     const updateFields = {};
-
     if (parsedBody.description?.trim()) {
       updateFields.description = parsedBody.description.trim();
     }
 
     if (parsedBody.taggedUsers?.length) {
-      console.log("Updating taggedEmails:", parsedBody.taggedUsers);
       updateFields.taggedEmails = parsedBody.taggedUsers;
     }
 
+    // 🔹 Start transaction only if not running in test environment
+    if (process.env.NODE_ENV !== "test") {
+      session = await mongoose.startSession();
+      session.startTransaction();
+    }
+
     // Fetch the existing post
-    const post = await PostFolder.findById(postId).session(session);
-    console.log("Fetched Post:", post);
+    const post = await PostFolder.findById(postId).session(
+      session || undefined
+    );
 
     if (!post) {
-      await session.abortTransaction();
-      session.endSession();
+      if (session) {
+        await session.abortTransaction();
+        session.endSession();
+      }
       return res.status(404).json({ error: "Post not found" });
     }
 
     // Handle new file uploads
     if (parsedBody.newUploadedFiles) {
       if (post.type !== "POST") {
-        await session.abortTransaction();
-        session.endSession();
-        return res
-          .status(400)
-          .json({ error: "Files can only be added to a post, not a folder" });
+        if (session) {
+          await session.abortTransaction();
+          session.endSession();
+        }
+        return res.status(400).json({
+          error: "Files can only be added to a post, not a folder",
+        });
       }
       if (post.files.length + parsedBody.newUploadedFiles.length > 20) {
-        await session.abortTransaction();
-        session.endSession();
-        return res
-          .status(400)
-          .json({ error: "A post cannot have more than 20 files" });
+        if (session) {
+          await session.abortTransaction();
+          session.endSession();
+        }
+        return res.status(400).json({
+          error: "A post cannot have more than 20 files",
+        });
       }
-      post.files.push(...parsedBody.newUploadedFiles);
+      // post.files.push(...parsedBody.newUploadedFiles);
+      updateFields.$push = { files: { $each: parsedBody.newUploadedFiles } };
     }
 
     // Handle updating existing files
@@ -168,39 +178,44 @@ export const updatePostFolder = async (req, res) => {
           (file) => file._id.toString() === updatedFile._id
         );
         if (fileIndex !== -1) {
-          post.files[fileIndex] = {
-            ...post.files[fileIndex].toObject(),
-            ...updatedFile,
-          };
+          updateFields[`files.${fileIndex}`] = updatedFile; // Update specific index
         }
       });
     }
 
     // Handle file deletions
     if (parsedBody.deleteFileIds) {
-      post.files = post.files.filter(
-        (file) => !parsedBody.deleteFileIds.includes(file._id.toString())
-      );
+      updateFields.$pull = {
+        files: { _id: { $in: parsedBody.deleteFileIds } },
+      };
     }
 
     // Apply the field updates
-    await PostFolder.findByIdAndUpdate(
+    const updatedPost = await PostFolder.findByIdAndUpdate(
       postId,
-      { $set: updateFields },
-      { session }
+      // { $set: updateFields },
+      updateFields,
+      { new: true, session: session || undefined }
     );
 
     // Save the updated document
-    await post.save({ session });
+    const bewPost = await post.save({ session: session || undefined });
+  
+    // 🔹 Commit transaction only if it was started
+    if (session) {
+      await session.commitTransaction();
+      session.endSession();
+    }
 
-    await session.commitTransaction();
-    session.endSession();
-
-    return res.status(200).json({ message: "Post updated successfully", post });
+    return res
+      .status(200)
+      .json({ message: "Post updated successfully", post: updatedPost });
   } catch (error) {
-    console.error("Update Error:", error);
-    await session.abortTransaction();
-    session.endSession();
+    // console.error("Update Error:", error);
+    if (session) {
+      await session.abortTransaction();
+      session.endSession();
+    }
     return res.status(500).json({ error: error.message });
   }
 };
