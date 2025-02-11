@@ -109,47 +109,51 @@ export const updatePostFolder = async (req, res) => {
     }
 
     // Validate request body with Zod
-    const { data: parsedBody, success } = updateNewPostSchema.safeParse(
-      req.body
-    );
-    console.log("success", success);
-    console.log("parsedBody", parsedBody);
+    const validationResult = updateNewPostSchema.safeParse(req.body);
 
-    if (!success) {
-      // console.log("validatedData", validatedData.error);
-
+    if (!validationResult.success) {
       return res.status(400).json({
         message: "Validation failed",
-        errors: parsedBody.error.format(),
+        errors: validationResult.error.format(),
       });
     }
 
+    const parsedBody = validationResult.data;
+    console.log("Parsed Body:", parsedBody);
+
     const updateFields = {};
 
-    if (parsedBody.description) {
-      updateFields.description = parsedBody.description;
+    if (parsedBody.description?.trim()) {
+      updateFields.description = parsedBody.description.trim();
     }
 
-    if (parsedBody.taggedUsers) {
-      console.log("taggedUsers", parsedBody?.taggedUsers);
+    if (parsedBody.taggedUsers?.length) {
+      console.log("Updating taggedEmails:", parsedBody.taggedUsers);
       updateFields.taggedEmails = parsedBody.taggedUsers;
     }
 
     // Fetch the existing post
-    const post = await PostFolder.findById({ _id: postId }).session(session);
-    console.log("post", post);
+    const post = await PostFolder.findById(postId).session(session);
+    console.log("Fetched Post:", post);
+
     if (!post) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(404).json({ error: "Post not found" });
     }
 
     // Handle new file uploads
     if (parsedBody.newUploadedFiles) {
       if (post.type !== "POST") {
+        await session.abortTransaction();
+        session.endSession();
         return res
           .status(400)
           .json({ error: "Files can only be added to a post, not a folder" });
       }
       if (post.files.length + parsedBody.newUploadedFiles.length > 20) {
+        await session.abortTransaction();
+        session.endSession();
         return res
           .status(400)
           .json({ error: "A post cannot have more than 20 files" });
@@ -179,6 +183,13 @@ export const updatePostFolder = async (req, res) => {
       );
     }
 
+    // Apply the field updates
+    await PostFolder.findByIdAndUpdate(
+      postId,
+      { $set: updateFields },
+      { session }
+    );
+
     // Save the updated document
     await post.save({ session });
 
@@ -187,9 +198,9 @@ export const updatePostFolder = async (req, res) => {
 
     return res.status(200).json({ message: "Post updated successfully", post });
   } catch (error) {
-    console.log("error", error);
-    // await session.abortTransaction();
-    // session.endSession();
+    console.error("Update Error:", error);
+    await session.abortTransaction();
+    session.endSession();
     return res.status(500).json({ error: error.message });
   }
 };
