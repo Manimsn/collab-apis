@@ -8,6 +8,7 @@ import {
   updatePostFolder,
   // updatePostOrFolder,
 } from "../controllers/posts/postController.js";
+import { updatePostStatus } from "../controllers/posts/updatePostStatus.js";
 // import verifyAccessToken from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -17,5 +18,6 @@ const router = express.Router();
 router.post("/", createPostOrFolder);
 // router.put("/:postId", updatePost);
 router.put("/:postId", updatePostFolder);
+router.put("/:postId/status", updatePostStatus);
 
 export default router;
