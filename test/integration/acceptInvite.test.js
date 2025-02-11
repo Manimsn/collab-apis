@@ -67,8 +67,6 @@ describe("POST /projects/invite/accept", () => {
       .send({
         token: inviteToken, // Send the invite token
       });
-    console.log(res.status);
-    console.log(res.body);
 
     expect(res.status).to.equal(200);
     expect(res.body.message).to.equal(messages.INVITE.SUCCESSFULLY_JOINED);

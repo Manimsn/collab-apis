@@ -128,9 +128,6 @@ describe("POST /projects/:projectId/invite", () => {
         fileOrFolderAccess: [{ fileOrFolderId: newFileId, role: ROLES.EDITOR }],
       });
 
-    console.log(res.status);
-    console.log(res.body);
-
     expect(res.status).to.equal(200);
     expect(res.body.message).to.equal(messages.INVITE.SENT_SUCCESS);
   });
@@ -322,10 +319,6 @@ describe("POST /projects/:projectId/invite", () => {
       .post(`/projects/${projectId}/invite`)
       .set("Authorization", `Bearer ${authToken}`)
       .send({ email: TEST_USER.email, category: "Files", role: ROLES.EDITOR });
-
-    console.log(check);
-    console.log(res.status);
-    console.log(res.body);
 
     expect(res.status).to.equal(400);
     expect(res.body.message).to.equal(
