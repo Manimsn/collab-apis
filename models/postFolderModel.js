@@ -29,6 +29,14 @@ const postSchema = new mongoose.Schema(
       },
     }, // Only required for folders
     description: { type: String },
+    isBlocker: {
+      type: Boolean,
+      default: null, // Ensures it is null if not provided
+    },
+    isFeed: {
+      type: Boolean,
+      default: null, // Ensures it is null if not provided
+    },
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,

@@ -69,6 +69,8 @@ export const createPostOrFolderSchema = z
       .refine(mongoose.Types.ObjectId.isValid, "Invalid User ID"),
     category: categoryEnumS, // Required for both post and folder
     description: z.string().optional(),
+    isBlocker: z.boolean().optional(),
+    isFeed: z.boolean().optional(),
     files: z
       .array(fileSchema)
       .min(1, "At least one file is required for a post")

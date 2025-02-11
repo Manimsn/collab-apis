@@ -32,6 +32,8 @@ export const createPostOrFolder = async (req, res, next) => {
       category,
       description,
       files,
+      isBlocker,
+      isFeed,
     } = validatedData.data;
 
     // Fetch project and validate ownership
@@ -80,6 +82,8 @@ export const createPostOrFolder = async (req, res, next) => {
       createdBy: userId,
       description,
       files: type === FILETYPE.POST ? files : [], // Only posts can have files
+      isBlocker,
+      isFeed,
     });
 
     await newPostOrFolder.save();
@@ -118,9 +122,16 @@ export const updatePostFolder = async (req, res) => {
 
     const parsedBody = validationResult.data;
     const updateFields = {};
+    console.log("parsedBody", parsedBody);
 
     if (parsedBody.description?.trim()) {
       updateFields.description = parsedBody.description.trim();
+    }
+    if (parsedBody.isBlocker) {
+      updateFields.isBlocker = parsedBody.isBlocker;
+    }
+    if (parsedBody.isFeed) {
+      updateFields.isFeed = parsedBody.isFeed;
     }
 
     if (parsedBody.taggedUsers?.length) {
@@ -144,6 +155,10 @@ export const updatePostFolder = async (req, res) => {
       }
       return res.status(404).json({ error: "Post not found" });
     }
+
+    // if (userId !== post.createdBy) {
+    //   return res.status(403).json({ error: "Only owner of the post can edit" });
+    // }
 
     // ✅ STEP 1: Handle file deletions separately
     if (parsedBody.deleteFileIds) {

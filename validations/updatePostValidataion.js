@@ -30,7 +30,8 @@ export const updateNewPostSchema = z
       .string()
       .min(5, { message: "Must be at least 5 characters long" })
       .optional(),
-
+    isBlocker: z.boolean().optional(),
+    isFeed: z.boolean().optional(),
     deleteFileIds: z
       .array(objectIdSchema)
       .min(
