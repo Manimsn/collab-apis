@@ -15,7 +15,8 @@ export const isUserAuthorized = async (
   email,
   projectId,
   category,
-  fileIds
+  fileIds,
+  checkAll = false // Determines if full validation is required
 ) => {
   try {
     // Step 1: Check if the user is the project creator
@@ -23,7 +24,7 @@ export const isUserAuthorized = async (
       _id: projectId,
       createdBy: userId,
     });
-    console.log("project", project);
+    // console.log("project", project);
     if (project) return true; // ✅ User is project creator
 
     // Step 2: Check project-level access in UserProjectMapping
@@ -36,6 +37,9 @@ export const isUserAuthorized = async (
 
     // Check if user has full project-level access (ADMIN or EDITOR)
     if (["ADMIN", "EDITOR"].includes(userMapping.role)) return true;
+
+    // If checkAll is false, return early
+    if (!checkAll) return false; // ❌ No full validation needed
 
     // Step 3: Check category-level access
     const hasCategoryAccess = userMapping.categoryAccess.some(

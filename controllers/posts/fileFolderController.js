@@ -7,63 +7,65 @@ import FileFolder from "../../models/fileFolderModel.js";
 import { updatePostWithFiles } from "../../services/postService.js";
 import { isUserAuthorized } from "../../middlewares/authorizationService.js";
 
-export const createFilesWithPost = async (req, res) => {
-  try {
-    const userId = req.user.userId; // Extract userId from token
-    const validatedData = createFilesWithPostSchema.safeParse({
-      ...req.body,
-      createdBy: userId, // Inject `createdBy` from token
-    });
+// REMOVE
+// we have create a new one
+// export const createFilesWithPost = async (req, res) => {
+//   try {
+//     const userId = req.user.userId; // Extract userId from token
+//     const validatedData = createFilesWithPostSchema.safeParse({
+//       ...req.body,
+//       createdBy: userId, // Inject `createdBy` from token
+//     });
 
-    if (!validatedData.success) {
-      return res.status(400).json({
-        message: "Validation failed",
-        errors: validatedData.error.format(),
-      });
-    }
+//     if (!validatedData.success) {
+//       return res.status(400).json({
+//         message: "Validation failed",
+//         errors: validatedData.error.format(),
+//       });
+//     }
 
-    const {
-      parentFolderId,
-      projectId,
-      category,
-      createdBy,
-      description,
-      files,
-    } = validatedData.data;
-    // console.log(validatedData.data);
+//     const {
+//       parentFolderId,
+//       projectId,
+//       category,
+//       createdBy,
+//       description,
+//       files,
+//     } = validatedData.data;
+//     // console.log(validatedData.data);
 
-    // ✅ Create a new Post record
-    const newPost = new Post({
-      createdBy,
-      projectId,
-      category,
-      description,
-    });
+//     // ✅ Create a new Post record
+//     const newPost = new Post({
+//       createdBy,
+//       projectId,
+//       category,
+//       description,
+//     });
 
-    await newPost.save();
+//     await newPost.save();
 
-    // ✅ Create multiple FileFolder records with postId reference
-    const filesWithPostId = files.map((file) => ({
-      ...file,
-      parentFolderId,
-      projectId,
-      category,
-      postId: newPost._id, // Assign newly created postId
-      createdBy, // Assign `createdBy` from JWT token
-    }));
+//     // ✅ Create multiple FileFolder records with postId reference
+//     const filesWithPostId = files.map((file) => ({
+//       ...file,
+//       parentFolderId,
+//       projectId,
+//       category,
+//       postId: newPost._id, // Assign newly created postId
+//       createdBy, // Assign `createdBy` from JWT token
+//     }));
 
-    const result = await FileFolder.insertMany(filesWithPostId);
+//     const result = await FileFolder.insertMany(filesWithPostId);
 
-    res.status(201).json({
-      message: "Files/Folders created successfully",
-      postId: newPost._id,
-      files: result.map((f) => f._id),
-    });
-  } catch (error) {
-    console.error("Error creating files/folders with post:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+//     res.status(201).json({
+//       message: "Files/Folders created successfully",
+//       postId: newPost._id,
+//       files: result.map((f) => f._id),
+//     });
+//   } catch (error) {
+//     console.error("Error creating files/folders with post:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
 
 export const updatePost = async (req, res) => {
   try {
@@ -92,7 +94,8 @@ export const updatePost = async (req, res) => {
       email,
       projectId,
       category,
-      fileIds
+      fileIds,
+      true
     );
 
     if (!isAuthorized) {

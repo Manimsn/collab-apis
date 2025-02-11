@@ -1,12 +1,13 @@
 import { FILETYPE } from "../../config/constants.js";
 import { messages } from "../../config/messages.js";
+import { isUserAuthorized } from "../../middlewares/authorizationService.js";
 import PostFolder from "../../models/postFolderModel.js";
 import { checkProjectExists } from "../../services/inviteService.js";
 import { createPostOrFolderSchema } from "../../validations/postValidation.js";
 
 export const createPostOrFolder = async (req, res, next) => {
   try {
-    const userId = req.user.userId; // Extract userId from token
+    const { userId, email } = req.user; // Extract userId from token
 
     // ✅ Validate request data
     const validatedData = createPostOrFolderSchema.safeParse({
@@ -37,10 +38,19 @@ export const createPostOrFolder = async (req, res, next) => {
       return res.status(404).json({ message: messages.PROJECT.NOT_FOUND });
     }
 
-    if (userId !== project?.createdBy.toString()) {
+    const isAuthorized = await isUserAuthorized(
+      userId,
+      email,
+      projectId,
+      null,
+      null,
+      false
+    );
+
+    if (!isAuthorized) {
       return res
         .status(403)
-        .json({ message: messages.PROJECT.INVITE_PERMISSION_ERROR });
+        .json({ message: "Unauthorized to create this post" });
     }
 
     // ✅ If `parentFolderId` exists, validate that it refers to an existing folder

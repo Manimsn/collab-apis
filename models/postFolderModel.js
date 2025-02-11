@@ -19,13 +19,13 @@ const postSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ["post", "folder"],
+      enum: ["POST", "FOLDER"],
       required: true,
     },
     name: {
       type: String,
       required: function () {
-        return this.type === "folder";
+        return this.type === "FOLDER";
       },
     }, // Only required for folders
     description: { type: String },
@@ -53,7 +53,7 @@ const postSchema = new mongoose.Schema(
       type: [fileSchema],
       validate: {
         validator: function (files) {
-          return this.type === "post" ? files.length <= 20 : true; // Only posts can have files
+          return this.type === "POST" ? files.length <= 20 : true; // Only posts can have files
         },
         message: "A post cannot have more than 20 files.",
       },
