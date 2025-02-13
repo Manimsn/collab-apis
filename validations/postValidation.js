@@ -117,6 +117,30 @@ export const createPostOrFolderSchema = z
     }
   );
 
+/**
+ * Zod schema to validate request body.
+ * Ensures only one of `isBlocker` or `isFeed` is provided and is a boolean.
+ */
+export const updateStatusSchema = z
+  .object({
+    isBlocker: z.boolean().optional(),
+    isFeed: z.boolean().optional(),
+  })
+  .refine(
+    (data) => Object.keys(data).length === 1,
+    "Only one field (isBlocker or isFeed) should be provided."
+  );
+
+// ✅ Define Zod Schema for Validation
+export const getPostsAndFoldersSchema = z.object({
+  projectId: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+    message: "Invalid projectId format",
+  }),
+  category: z.enum(categoryEnum, {
+    errorMap: () => ({ message: "Invalid category value" }),
+  }),
+});
+
 // ✅ Positive Test Cases
 //   {
 //     "type": "folder",
