@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { z } from "zod";
-import { updateStatusSchema } from "../../controllers/posts/updatePostStatus.js";
+import { updateStatusSchema } from "../../validations/postValidation.js";
 
 describe("Zod Validation - updateStatusSchema", () => {
   describe("✅ Positive Test Cases", () => {
