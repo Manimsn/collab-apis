@@ -34,7 +34,7 @@ app.use("/logout", logoutRoutes);
 app.use("/resetpassword", resetPasswordRoutes);
 app.use("/users", userRoutes);
 
-app.use(verifyAccessToken);
+// app.use(verifyAccessToken);
 app.use("/projects", projectRoutes);
 app.use("/post", fileRoutes);
 
