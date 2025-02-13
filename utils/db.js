@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { seedDatabase } from "../seeds/seedDatabase.js";
+
 
 const connectDB = async () => {
   try {
@@ -7,6 +9,9 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     console.log("Connected to MongoDB");
+    // 🔹 Call the seed function after successful DB connection
+    await seedDatabase();
+    console.log("Database seeding completed!");
   } catch (err) {
     console.error("Database connection error:", err);
     process.exit(1); // Exit on failure

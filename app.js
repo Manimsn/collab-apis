@@ -9,6 +9,8 @@ import refreshRoutes from "./routes/refresh.js"; // Use ESM import
 import logoutRoutes from "./routes/logout.js"; // Use ESM import
 import resetPasswordRoutes from "./routes/reset-password.js"; // Use ESM import
 
+import userRoutes from "./routes/users.js"; // Use ESM import
+
 import projectRoutes from "./routes/projects.js"; // Use ESM import
 import fileRoutes from "./routes/fileFolderRoutes.js"; // Use ESM import
 import errorHandler from "./middlewares/errorHandler.js"; // Use ESM import
@@ -30,6 +32,7 @@ app.use("/auth", authRoutes);
 app.use("/refresh", refreshRoutes);
 app.use("/logout", logoutRoutes);
 app.use("/resetpassword", resetPasswordRoutes);
+app.use("/users", userRoutes);
 
 app.use(verifyAccessToken);
 app.use("/projects", projectRoutes);
