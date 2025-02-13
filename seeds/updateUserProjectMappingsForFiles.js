@@ -1,4 +1,3 @@
-// seeds/updateUserProjectMappingsForFiles.js
 import UserProjectMapping from "../models/UserProjectMapping.js";
 import User from "../models/User.js";
 import PostFolder from "../models/postFolderModel.js";
@@ -19,13 +18,11 @@ export const updateUserProjectMappingsForFiles = async () => {
     // Fetch project owner and team members
     const projectOwner = await User.findOne({ email: project.ownerEmail });
     const allUsers = await UserProjectMapping.find({ projectId: project._id });
-    // const projectLevelUsers = allUsers.filter((u) => u.role); // Users with project-level access
-    // const categoryLevelUsers = allUsers.filter(
-    //   (u) => u.categoryAccess && u.categoryAccess.length > 0
-    // );
-    const eligibleUsers = allUsers.filter((u) => !u.role); // Users who don't have project-level access
 
-    // Exclude project owners
+    // Users who do not have project-level access
+    const eligibleUsers = allUsers.filter((u) => !u.role);
+
+    // Exclude project owner from being assigned access
     const filteredUsers = eligibleUsers.filter(
       (user) => user.email !== projectOwner.email
     );
@@ -41,25 +38,51 @@ export const updateUserProjectMappingsForFiles = async () => {
         );
         if (hasCategoryAccess) continue;
 
-        await UserProjectMapping.findOneAndUpdate(
-          { email: user.email, projectId: post.projectId },
-          {
-            $setOnInsert: {
-              email: user.email,
-              projectId: post.projectId,
-              createdBy: projectOwner._id,
-            },
-            $addToSet: {
-              fileOrFolderAccess: {
+        // Find existing user project mapping
+        const userMapping = await UserProjectMapping.findOne({
+          email: user.email,
+          projectId: post.projectId,
+        });
+
+        if (userMapping) {
+          // Check if category already exists in fileOrFolderAccess
+          const existingCategory = userMapping.fileOrFolderAccess.find(
+            (entry) => entry.category === post.category
+          );
+
+          if (existingCategory) {
+            // Append the file to the existing category
+            existingCategory.files.push({
+              fileOrFolderId: post._id,
+              role: "EDITOR",
+            });
+          } else {
+            // Add a new category with the file
+            userMapping.fileOrFolderAccess.push({
+              category: post.category,
+              files: [{ fileOrFolderId: post._id, role: "EDITOR" }],
+            });
+          }
+
+          // Save the updated document
+          await userMapping.save();
+        } else {
+          // Create new user mapping entry
+          await UserProjectMapping.create({
+            email: user.email,
+            projectId: post.projectId,
+            createdBy: projectOwner._id,
+            fileOrFolderAccess: [
+              {
                 category: post.category,
                 files: [{ fileOrFolderId: post._id, role: "EDITOR" }],
               },
-            },
-          },
-          { upsert: true, new: true }
-        );
+            ],
+          });
+        }
       }
     }
   }
+
   console.log("✅ File/Folder access updated successfully.");
 };
