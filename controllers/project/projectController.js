@@ -139,7 +139,7 @@ export const getUserProjects = async (req, res) => {
 
     // Fetch projects created by the user
     const ownedProjects = await Project.find({ createdBy: userId })
-      .select("_id name description location updatedAt")
+      .select("_id name updatedAt")
       .lean();
 
     // Attach 'owner' role to owned projects
@@ -148,54 +148,28 @@ export const getUserProjects = async (req, res) => {
       role: "owner",
     }));
 
-    // Fetch user project mappings where the user has been invited
+    // Fetch project mappings where the user has been invited
     const userMappings = await UserProjectMapping.find({
       email: userEmail,
-      status: "invited",
+      status: "invited",//accepted
     })
-      .select("projectId role categoryAccess fileOrFolderAccess")
+      .select("projectId")
       .lean();
 
-    // Extract projectIds from mappings
+    console.log("userMappings", userMappings.length);
+
+    // Extract projectIds from user mappings
     const projectIds = userMappings.map((mapping) => mapping.projectId);
 
-    // Fetch project details for these projectIds
+    // Fetch project details for accessed projects
     const accessedProjects = await Project.find({ _id: { $in: projectIds } })
-      .select("_id name description location updatedAt")
+      .select("_id name updatedAt")
       .lean();
 
-    // Map project details by projectId for easy lookup
-    const projectDetailsMap = new Map();
-    accessedProjects.forEach((project) => {
-      projectDetailsMap.set(project._id.toString(), project);
-    });
+    // Combine both owned and accessed projects
+    const finalProjects = [...ownedProjectsFormatted, ...accessedProjects];
 
-    // Process user mappings
-    const finalProjects = [...ownedProjectsFormatted];
-
-    userMappings.forEach((mapping) => {
-      const project = projectDetailsMap.get(mapping.projectId.toString());
-      if (!project) return;
-
-      if (mapping.role) {
-        // Full access project
-        finalProjects.push({ ...project, role: mapping.role });
-      } else if (mapping.categoryAccess.length > 0) {
-        // Category access
-        finalProjects.push({
-          ...project,
-          categoryAccess: mapping.categoryAccess,
-        });
-      } else if (mapping.fileOrFolderAccess.length > 0) {
-        // File/Folder access
-        finalProjects.push({
-          ...project,
-          fileOrFolderAccess: mapping.fileOrFolderAccess,
-        });
-      }
-    });
-
-    // Sort by updatedAt (latest first)
+    // Sort projects by updatedAt (latest first)
     finalProjects.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
     return res.status(200).json(finalProjects);
