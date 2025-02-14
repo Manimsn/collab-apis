@@ -1,10 +1,13 @@
+import mongoose from "mongoose";
+
 import Project from "../../models/Project.js";
+import UserProjectMapping from "../../models/UserProjectMapping.js";
+
 import { isProjectNameTaken } from "../../services/projectService.js";
 import {
   projectSchema,
   updateProjectSchema,
 } from "../../validations/projectValidation.js";
-import mongoose from "mongoose";
 
 export const createProject = async (req, res) => {
   try {
@@ -126,5 +129,78 @@ export const updateProject = async (req, res) => {
   } catch (error) {
     console.error("Error updating project:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getUserProjects = async (req, res) => {
+  try {
+    const userId = req.user.userId; // Extract userId from token
+    const userEmail = req.user.email; // Extract email from token
+
+    // Fetch projects created by the user
+    const ownedProjects = await Project.find({ createdBy: userId })
+      .select("_id name description location updatedAt")
+      .lean();
+
+    // Attach 'owner' role to owned projects
+    const ownedProjectsFormatted = ownedProjects.map((project) => ({
+      ...project,
+      role: "owner",
+    }));
+
+    // Fetch user project mappings where the user has been invited
+    const userMappings = await UserProjectMapping.find({
+      email: userEmail,
+      status: "invited",
+    })
+      .select("projectId role categoryAccess fileOrFolderAccess")
+      .lean();
+
+    // Extract projectIds from mappings
+    const projectIds = userMappings.map((mapping) => mapping.projectId);
+
+    // Fetch project details for these projectIds
+    const accessedProjects = await Project.find({ _id: { $in: projectIds } })
+      .select("_id name description location updatedAt")
+      .lean();
+
+    // Map project details by projectId for easy lookup
+    const projectDetailsMap = new Map();
+    accessedProjects.forEach((project) => {
+      projectDetailsMap.set(project._id.toString(), project);
+    });
+
+    // Process user mappings
+    const finalProjects = [...ownedProjectsFormatted];
+
+    userMappings.forEach((mapping) => {
+      const project = projectDetailsMap.get(mapping.projectId.toString());
+      if (!project) return;
+
+      if (mapping.role) {
+        // Full access project
+        finalProjects.push({ ...project, role: mapping.role });
+      } else if (mapping.categoryAccess.length > 0) {
+        // Category access
+        finalProjects.push({
+          ...project,
+          categoryAccess: mapping.categoryAccess,
+        });
+      } else if (mapping.fileOrFolderAccess.length > 0) {
+        // File/Folder access
+        finalProjects.push({
+          ...project,
+          fileOrFolderAccess: mapping.fileOrFolderAccess,
+        });
+      }
+    });
+
+    // Sort by updatedAt (latest first)
+    finalProjects.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+    return res.status(200).json(finalProjects);
+  } catch (error) {
+    console.error("Error fetching user projects:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
