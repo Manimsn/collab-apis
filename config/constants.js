@@ -68,16 +68,86 @@ export const FILETYPE = {
 
 export const FileTypeEnum = ["POST", "FOLDER", "LINK"];
 
+export const categories = {
+  DRAWINGS: "Drawings",
+  IMAGES: "Images",
+  PANORAMA: "Panoramas",
+  RENDERINGS: "Renderings",
+  SIDEBYSIDE: "SideBySide",
+  VIDEO: "Videos",
+  SPECIFICATION: "Specification",
+  MOODBAORD: "MoodBoard",
+  THREEDMODELS: "3DModels",
+  SURVEY: "Survey",
+  FILES: "Files",
+};
+
 export const categoryEnum = [
-  "Drawings",
-  "Images",
-  "Panoramas",
-  "Renderings",
-  "SideBySide",
-  "Videos",
-  "Specification",
-  "MoodBoard",
-  "3DModels",
-  "Survey",
-  "Files",
+  categories.DRAWINGS,
+  categories.IMAGES,
+  categories.PANORAMA,
+  categories.RENDERINGS,
+  categories.VIDEO,
+  categories.SPECIFICATION,
+  categories.MOODBAORD,
+  categories.THREEDMODELS,
+  categories.SURVEY,
+  categories.FILES,
+];
+
+export const fileTypes = {
+  images: "image/*",
+  pdf: "application/pdf",
+  threeDModels: [
+    "model/gltf+json", // GLTF
+    "model/gltf-binary", // GLB
+    "model/stl", // STL
+    "model/obj", // OBJ
+    "model/mtl", // MTL
+    "application/vnd.ms-3mfdocument", // 3MF
+  ],
+  videos: "video/*",
+};
+
+export const categoryFileTypes = [
+  {
+    categoryName: categories.DRAWINGS,
+    fileTypes: [fileTypes.images, fileTypes.pdf],
+  },
+  {
+    categoryName: categories.IMAGES,
+    fileTypes: [fileTypes.images],
+  },
+  {
+    categoryName: categories.PANORAMA,
+    fileTypes: [fileTypes.images],
+  },
+  {
+    categoryName: categories.RENDERINGS,
+    fileTypes: [fileTypes.images, fileTypes.pdf],
+  },
+  {
+    categoryName: categories.VIDEO,
+    fileTypes: [fileTypes.videos],
+  },
+  {
+    categoryName: categories.SPECIFICATION,
+    fileTypes: [fileTypes.images, fileTypes.pdf],
+  },
+  {
+    categoryName: categories.MOODBAORD,
+    fileTypes: [fileTypes.pdf],
+  },
+  {
+    categoryName: categories.THREEDMODELS,
+    fileTypes: [fileTypes.threeDModels],
+  },
+  {
+    categoryName: categories.SURVEY,
+    fileTypes: [fileTypes.pdf],
+  },
+  {
+    categoryName: categories.FILES,
+    fileTypes: [fileTypes.pdf],
+  },
 ];
