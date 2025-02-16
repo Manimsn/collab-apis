@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createProject,
+  getUserAllowedCategories,
   getUserProjects,
   updateProject,
 } from "../controllers/project/projectController.js";
@@ -21,5 +22,10 @@ router.post("/invite/accept", verifyAccessToken, acceptInvite);
 router.delete("/:projectId/invite", verifyAccessToken, revokeInvite);
 router.put("/:projectId", verifyAccessToken, updateProject);
 router.get("/", verifyAccessToken, getUserProjects);
+router.get(
+  "/categorylist/:projectId",
+  verifyAccessToken,
+  getUserAllowedCategories
+);
 
 export default router;

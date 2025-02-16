@@ -1,4 +1,5 @@
 import { z } from "zod";
+import mongoose from "mongoose";
 
 // Define Zod schema for validation
 export const projectSchema = z.object({
@@ -24,3 +25,15 @@ export const updateProjectSchema = z
     message:
       "At least one field (name, description, or location) must be provided.",
   });
+
+// 🔹 Custom Zod validator for MongoDB ObjectId
+export const objectIdSchema = z
+  .string()
+  .refine((id) => mongoose.Types.ObjectId.isValid(id), {
+    message: "Invalid projectId. Must be a valid MongoDB ObjectId.",
+  });
+
+// 🔹 Define Zod schema for request validation
+export const projectIdSchema = z.object({
+  projectId: objectIdSchema,
+});

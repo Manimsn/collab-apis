@@ -5,6 +5,7 @@ import UserProjectMapping from "../../models/UserProjectMapping.js";
 
 import { isProjectNameTaken } from "../../services/projectService.js";
 import {
+  projectIdSchema,
   projectSchema,
   updateProjectSchema,
 } from "../../validations/projectValidation.js";
@@ -173,6 +174,73 @@ export const getUserProjects = async (req, res) => {
     return res.status(200).json(finalProjects);
   } catch (error) {
     console.error("Error fetching user projects:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getUserAllowedCategories = async (req, res) => {
+  try {
+    // ✅ Validate request params using Zod
+    const validationResult = projectIdSchema.safeParse(req.params);
+    if (!validationResult.success) {
+      return res
+        .status(400)
+        .json({ message: validationResult.error.errors[0].message });
+    }
+
+    const { projectId } = validationResult.data;
+    const userEmail = req.user.email; // Extract email from token
+
+    // 🔹 Step 1: Check if the user is the project owner
+    const project = await Project.findOne({
+      _id: projectId,
+      ownerEmail: userEmail,
+    });
+
+    if (project) {
+      return res.status(200).json({ allowedCategories: "ALL" });
+    }
+
+    // 🔹 Step 2: Check UserProjectMapping for role-based access
+    const userMapping = await UserProjectMapping.findOne({
+      projectId,
+      email: userEmail,
+    }).lean();
+
+    if (!userMapping) {
+      return res.status(403).json({ message: "No access to this project." });
+    }
+
+    // If the user has a `role`, they get full access
+    if (userMapping.role) {
+      return res.status(200).json({ allowedCategories: "ALL" });
+    }
+
+    // 🔹 Step 3: Check category-based access
+    let allowedCategories = new Set();
+
+    if (userMapping.categoryAccess.length > 0) {
+      userMapping.categoryAccess.forEach((access) =>
+        allowedCategories.add(access.category)
+      );
+    }
+
+    if (userMapping.fileOrFolderAccess.length > 0) {
+      userMapping.fileOrFolderAccess.forEach((access) =>
+        allowedCategories.add(access.category)
+      );
+    }
+
+    if (allowedCategories.size > 0) {
+      return res
+        .status(200)
+        .json({ allowedCategories: Array.from(allowedCategories) });
+    }
+
+    // 🔹 Step 4: If no category access, deny access
+    return res.status(403).json({ message: "No access to this project." });
+  } catch (error) {
+    console.error("Error fetching allowed categories:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
