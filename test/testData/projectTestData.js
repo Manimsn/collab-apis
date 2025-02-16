@@ -1,20 +1,22 @@
-import faker from "faker";
-import Project from "../models/Project.js";
-import { createUser } from "./userTestData.js";
+import { faker } from "@faker-js/faker";
+import Project from "../../models/Project.js";
 
-export const generateProject = async (overrides = {}) => {
-  const user = await createUser();
+export const generateProject = async (
+  createdBy,
+  ownerEmail,
+  overrides = {}
+) => {
   return {
-    name: faker.company.companyName(),
+    name: faker.company.name(),
     description: faker.lorem.sentence(),
-    location: faker.address.city(),
-    createdBy: user._id,
-    ownerEmail: user.email,
+    location: faker.location.city(),
+    createdBy,
+    ownerEmail,
     ...overrides,
   };
 };
 
-export const createProject = async (overrides = {}) => {
-  const projectData = await generateProject(overrides);
+export const createProject = async (createdBy, ownerEmail, overrides = {}) => {
+  const projectData = await generateProject(createdBy, ownerEmail, overrides);
   return await Project.create(projectData);
 };

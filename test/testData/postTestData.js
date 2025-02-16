@@ -1,8 +1,6 @@
-import faker from "faker";
-import PostFolder from "../models/PostFolder.js";
-import { createUser } from "./userTestData.js";
-import { createProject } from "./projectTestData.js";
+import { faker } from "@faker-js/faker";
 import { categories, categoryFileTypes } from "../../config/constants.js";
+import PostFolder from "../../models/postFolderModel.js";
 
 /**
  * Get random file types based on category
@@ -31,8 +29,6 @@ const generateFiles = (category, fileCount = 5) => {
 };
 
 export const generatePost = async (overrides = {}) => {
-  const user = await createUser();
-  const project = await createProject();
   const category = faker.random.arrayElement(Object.values(categories));
   const files = generateFiles(category);
 
@@ -42,17 +38,29 @@ export const generatePost = async (overrides = {}) => {
     description: faker.lorem.sentence(),
     isBlocker: faker.datatype.boolean(),
     isFeed: faker.datatype.boolean(),
-    projectId: project._id,
-    createdBy: user._id,
+    projectId,
+    createdBy,
     category,
-    parentFolderId: null,
-    taggedEmails: [user.email],
+    parentFolderId,
+    taggedEmails,
     files,
     ...overrides,
   };
 };
 
-export const createPost = async (overrides = {}) => {
-  const postData = await generatePost(overrides);
+export const createPost = async (
+  overrides = {},
+  projectId,
+  parentFolderId = null,
+  createdBy,
+  taggedEmails
+) => {
+  const postData = await generatePost(
+    overrides,
+    projectId,
+    parentFolderId,
+    createdBy,
+    taggedEmails
+  );
   return await PostFolder.create(postData);
 };

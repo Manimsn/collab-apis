@@ -14,14 +14,14 @@ import UserProjectMapping from "../../models/UserProjectMapping.js";
  * @returns {Object} Generated user-project mapping data
  */
 export const generateUserProjectMapping = (
-  overrides = {},
   userEmail,
   projectId,
   createdBy,
   role, // Now optional, only assigned if explicitly provided
   status = "invited",
   categoryAccess = [],
-  fileOrFolderAccess = []
+  fileOrFolderAccess = [],
+  overrides = {}
 ) => {
   return {
     email: userEmail,
@@ -50,24 +50,24 @@ export const generateUserProjectMapping = (
  * @returns {Object} MongoDB document for user-project mapping
  */
 export const createUserProjectMapping = async (
-  overrides = {},
   userEmail,
   projectId,
   createdBy,
   role, // Now optional
   status = "invited",
   categoryAccess = [],
-  fileOrFolderAccess = []
+  fileOrFolderAccess = [],
+  overrides = {},
 ) => {
   const mappingData = generateUserProjectMapping(
-    overrides,
     userEmail,
     projectId,
     createdBy,
     role,
     status,
     categoryAccess,
-    fileOrFolderAccess
+    fileOrFolderAccess,
+    overrides
   );
   return await UserProjectMapping.create(mappingData);
 };

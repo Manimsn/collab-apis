@@ -1,19 +1,19 @@
-import faker from "faker";
+import { faker } from "@faker-js/faker";
 import User from "../../models/User.js";
 
 export const generateUser = (overrides = {}) => {
   return {
-    firstName: faker.name.firstName(),
-    lastName: faker.name.lastName(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
     email: faker.internet.email(),
     passwordHash: faker.internet.password(12),
-    designation: faker.name.jobTitle(),
-    location: faker.address.city(),
-    plan: faker.random.arrayElement(["FREE", "BASIC", "PREMIUM"]),
-    planType: faker.random.arrayElement(["Monthly", "Yearly", null]),
-    credits: faker.datatype.number({ min: 0, max: 100 }),
-    totalCredits: faker.datatype.number({ min: 100, max: 500 }),
-    balanceCredits: faker.datatype.number({ min: 0, max: 100 }),
+    designation: faker.person.jobTitle(),
+    location: faker.location.city(),
+    plan: faker.helpers.arrayElement(["FREE", "BASIC", "PREMIUM"]),
+    planType: faker.helpers.arrayElement(["Monthly", "Yearly", null]),
+    credits: faker.number.int({ min: 0, max: 100 }),
+    totalCredits: faker.number.int({ min: 100, max: 500 }),
+    balanceCredits: faker.number.int({ min: 0, max: 100 }),
     downloadedModels: [],
     refreshTokens: [],
     passwordHistory: [],
