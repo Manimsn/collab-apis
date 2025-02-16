@@ -605,9 +605,6 @@ describe("GET /api/posts-folders (Full Project Access)", () => {
       .get(`/post/posts-folders?projectId=${projectId}&category=${category}`)
       .set("Authorization", `Bearer ${limitedUserToken}`);
 
-    console.log(res.status);
-    console.log(res.body);
-
     expect(res.status).to.equal(403);
     // expect(res.body.message).to.equal(
     //   "Unauthorized: No access to any folders or posts"
@@ -616,14 +613,11 @@ describe("GET /api/posts-folders (Full Project Access)", () => {
   });
 });
 
+// ### **⚡ Edge Cases**
 
-
-// ### **⚡ Edge Cases**  
-
-
-// 3️⃣ **Large Dataset Handling** → Simulate thousands of records to check API performance and response time.  
-// 4️⃣ **Database Connection Failure** → Simulate a database error to ensure it returns `500 Internal Server Error`.  
-// 5️⃣ **Concurrency Test** → Multiple users request data simultaneously to check performance under load.  
-// 6️⃣ **Mixed Access Control** → User has full access to some categories and limited access to others; ensure correct filtering.  
+// 3️⃣ **Large Dataset Handling** → Simulate thousands of records to check API performance and response time.
+// 4️⃣ **Database Connection Failure** → Simulate a database error to ensure it returns `500 Internal Server Error`.
+// 5️⃣ **Concurrency Test** → Multiple users request data simultaneously to check performance under load.
+// 6️⃣ **Mixed Access Control** → User has full access to some categories and limited access to others; ensure correct filtering.
 
 // ---

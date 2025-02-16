@@ -24,14 +24,11 @@ export const isUserAuthorized = async (
       _id: projectId,
       createdBy: userId,
     });
-    // console.log("project", project);
+
     if (project) return true; // ✅ User is project creator
 
     // Step 2: Check project-level access in UserProjectMapping
     const userMapping = await UserProjectMapping.findOne({ email, projectId });
-    console.log("userMapping", userMapping);
-    console.log("email", email);
-    console.log("projectId", projectId);
 
     if (!userMapping) return false; // ❌ No project access
 

@@ -57,9 +57,7 @@ describe("GET /refresh", () => {
   // --- Positive Test Cases ---
   it("should successfully return a new access token when a valid refresh token is provided", async () => {
     const user = await createTestUser();
-    // console.log("Test 1:", user);
     const validRefreshToken = user.refreshTokens[0];
-    // console.log("Test Refresh Token: ", validRefreshToken);
 
     const res = await supertest(app)
       .get("/refresh")
@@ -103,7 +101,7 @@ describe("GET /refresh", () => {
 
     expect(res.status).to.equal(403);
     expect(res.body).to.be.empty; // Response body should be empty
-  });//
+  });
 
   it("should clear all tokens for a user if a reused token is detected", async () => {
     const user = await createTestUser();
@@ -120,7 +118,7 @@ describe("GET /refresh", () => {
     expect(res.status).to.equal(403);
     const updatedUser = await User.findById(user._id).exec();
     expect(updatedUser.refreshTokens).to.be.empty; // All tokens should be cleared
-  });//
+  });
 
   // --- Edge Cases ---
   it("should return 403 for an expired refresh token", async () => {

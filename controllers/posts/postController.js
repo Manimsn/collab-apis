@@ -127,7 +127,6 @@ export const updatePostFolder = async (req, res) => {
 
     const parsedBody = validationResult.data;
     const updateFields = {};
-    console.log("parsedBody", parsedBody);
 
     if (parsedBody.description?.trim()) {
       updateFields.description = parsedBody.description.trim();
@@ -304,10 +303,6 @@ export const getPostsAndFolders = async (req, res) => {
     // ✅ Check if the project exists
     const project = await checkProjectExists(projectId);
 
-    console.log(project?.createdBy);
-    console.log(project?.ownerEmail);
-    console.log(userId);
-    console.log(email);
     if (!project) {
       return res.status(404).json({ message: messages.PROJECT.NOT_FOUND });
     }

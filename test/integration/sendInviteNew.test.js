@@ -267,9 +267,6 @@ describe("POST /projects/:projectId/invite", () => {
   //     .set("Authorization", `Bearer ${authToken}`)
   //     .send({ email: TEST_USER.email });
 
-  //   console.log(res.status);
-  //   console.log(res.body);
-
   //   expect(res.status).to.equal(400);
   //   expect(res.body.error.role._errors).to.include("Required");
   // });

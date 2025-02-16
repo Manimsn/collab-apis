@@ -197,7 +197,7 @@ export const sendInvite = async (req, res) => {
         ...(isProjectAccess ? { role } : {}),
       });
     }
-    
+
     await invite.save();
     const inviteLink = `https://your-app.com/invite?token=${invite.inviteToken}`;
     await sendEmail(
@@ -279,11 +279,6 @@ export const revokeInvite = async (req, res) => {
     }
 
     const projectObjectId = new mongoose.Types.ObjectId(projectId);
-
-    // console.log("🔹 Searching for Invite:", {
-    //   projectId: projectObjectId,
-    //   email: email.trim(),
-    // });
 
     const invite = await UserProjectMapping.findOne({
       projectId: projectObjectId,

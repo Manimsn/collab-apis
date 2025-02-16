@@ -151,12 +151,10 @@ export const getUserProjects = async (req, res) => {
     // Fetch project mappings where the user has been invited
     const userMappings = await UserProjectMapping.find({
       email: userEmail,
-      status: "invited",//accepted
+      status: "invited", //accepted
     })
       .select("projectId")
       .lean();
-
-    console.log("userMappings", userMappings.length);
 
     // Extract projectIds from user mappings
     const projectIds = userMappings.map((mapping) => mapping.projectId);

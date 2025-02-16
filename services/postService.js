@@ -11,7 +11,7 @@ export const updatePostWithFiles = async (postId, updateData) => {
   try {
     // Fetch existing post
     const existingPost = await Post.findById({ _id: postId });
-    console.log("existingPost", existingPost);
+
     if (!existingPost) {
       return { success: false, status: 404, message: "Post not found" };
     }
