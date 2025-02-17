@@ -149,8 +149,6 @@ describe("PUT /post-folder/:postId/status - Update Post/Folder Status", () => {
       .put(`/post/${nonExistentPostId}/status`)
       .set("Authorization", `Bearer ${authToken}`)
       .send({ isFeed: true });
-    console.log("res", res.status);
-    console.log("res", res.body);
 
     expect(res.status).to.equal(404);
     expect(res.body.message).to.equal("Post not found.");

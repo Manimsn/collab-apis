@@ -34,7 +34,7 @@ const sendEmail = async (toEmail, toName, templateKey, mergeInfo = {}) => {
       merge_info: mergeInfo,
     });
 
-    console.log(`📧 Email sent successfully to ${toEmail}`);
+    // console.log(`📧 Email sent successfully to ${toEmail}`);
     return response;
   } catch (error) {
     console.error(`❌ Failed to send email: ${error.message}`);

@@ -274,7 +274,6 @@ export const getAccessList = async (req, res) => {
   try {
     const { projectId } = req.query;
     const email = req.user.email;
-    console.log("projectId---------", projectId);
 
     // Validate input
     if (!projectId || !email) {

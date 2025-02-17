@@ -92,7 +92,6 @@ export default PostFolder;
 //     { $set: { "files.$[elem].name": "newFileName.pdf" } }, // Change only the file name
 //     { arrayFilters: [{ "elem.name": "oldFileName.pdf" }] } // Apply only to the matching file
 //   );
-//   console.log("File name updated successfully!");
 
 // const existingFile = await Post.findOne({
 //     _id: postId,
@@ -100,7 +99,6 @@ export default PostFolder;
 //   });
 
 //   if (existingFile) {
-//     console.log("A file with this name already exists in the post!");
 //   } else {
 //     await Post.updateOne(
 //       { _id: postId, "files.name": "oldFileName.pdf" },

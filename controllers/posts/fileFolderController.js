@@ -32,7 +32,6 @@ import { isUserAuthorized } from "../../middlewares/authorizationService.js";
 //       description,
 //       files,
 //     } = validatedData.data;
-//     // console.log(validatedData.data);
 
 //     // ✅ Create a new Post record
 //     const newPost = new Post({

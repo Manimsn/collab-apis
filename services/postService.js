@@ -24,7 +24,6 @@ export const updatePostWithFiles = async (postId, updateData) => {
       _id: { $in: fileIds },
       postId,
     });
-    console.log("existingFiles", existingFiles);
 
     // Skip update if fields haven't changed
     const updatedFields = {};
