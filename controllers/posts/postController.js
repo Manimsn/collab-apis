@@ -393,6 +393,8 @@ export const renamePostOrFolder = async (req, res) => {
   try {
     const { fileId, name } = req.body;
     const { postId } = req.params;
+    const userId = req.user.userId;
+    const email = req.user.email;
 
     // Validate input
     const validationResult = updateNameSchema.safeParse({
@@ -400,6 +402,7 @@ export const renamePostOrFolder = async (req, res) => {
       fileId,
       name,
     });
+
     if (!validationResult.success) {
       return res.status(400).json({
         message: "Validation failed",
@@ -411,6 +414,28 @@ export const renamePostOrFolder = async (req, res) => {
     const post = await PostFolder.findById(postId);
     if (!post) {
       return res.status(404).json({ message: "Post/Folder not found" });
+    }
+
+    // Fetch file IDs from files array
+    const fileIds = post ? post?.files.map((f) => f._id) : [];
+
+    if (post.createdBy !== userId) {
+      // Authorization check
+      const isAuthorized = await isUserAuthorized(
+        userId,
+        email,
+        post.projectId,
+        post?.category,
+        fileIds,
+        true
+      );
+      console.log("userId---------isAuthorized", isAuthorized);
+
+      if (!isAuthorized) {
+        return res
+          .status(403)
+          .json({ message: "Unauthorized to update this post" });
+      }
     }
 
     if (post.type === "FOLDER") {
