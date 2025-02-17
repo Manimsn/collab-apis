@@ -23,7 +23,7 @@ router.post("/:projectId/invite", verifyAccessToken, sendInvite);
 router.post("/invite/accept", verifyAccessToken, acceptInvite);
 router.delete("/:projectId/invite", verifyAccessToken, revokeInvite);
 router.put("/:projectId", verifyAccessToken, updateProject);
-router.get("/user-project-mapping", verifyAccessToken, getAccessList);
+router.get("/project-access", verifyAccessToken, getAccessList);
 router.get("/", verifyAccessToken, getUserProjects);
 router.get(
   "/categorylist/:projectId",
