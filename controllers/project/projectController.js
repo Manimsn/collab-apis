@@ -244,3 +244,57 @@ export const getUserAllowedCategories = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const getOneProject = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ error: "Invalid project ID" });
+    }
+
+    const project = await Project.findById(projectId).populate(
+      "createdBy",
+      "name email"
+    ); // Adjust populated fields as needed
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    res.status(200).json(project);
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getAccessList = async (req, res) => {
+  try {
+    const { projectId } = req.query;
+    const email = req.user.email;
+    console.log("projectId---------", projectId);
+
+    // Validate input
+    if (!projectId || !email) {
+      return res
+        .status(400)
+        .json({ error: "Both projectId and email are required" });
+    }
+
+    // Find user-project mapping
+    const mapping = await UserProjectMapping.findOne({ projectId, email })
+      .populate("projectId", "name location") // Populate project details
+      .populate("createdBy", "name email"); // Populate creator details
+
+    if (!mapping) {
+      return res.status(404).json({ error: "Mapping not found" });
+    }
+
+    res.status(200).json(mapping);
+  } catch (error) {
+    console.error("Error fetching user project mapping:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

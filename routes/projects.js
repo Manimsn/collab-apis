@@ -1,6 +1,8 @@
 import express from "express";
 import {
   createProject,
+  getAccessList,
+  getOneProject,
   getUserAllowedCategories,
   getUserProjects,
   updateProject,
@@ -21,11 +23,13 @@ router.post("/:projectId/invite", verifyAccessToken, sendInvite);
 router.post("/invite/accept", verifyAccessToken, acceptInvite);
 router.delete("/:projectId/invite", verifyAccessToken, revokeInvite);
 router.put("/:projectId", verifyAccessToken, updateProject);
+router.get("/user-project-mapping", verifyAccessToken, getAccessList);
 router.get("/", verifyAccessToken, getUserProjects);
 router.get(
   "/categorylist/:projectId",
   verifyAccessToken,
   getUserAllowedCategories
 );
+router.get("/:projectId", verifyAccessToken, getOneProject);
 
 export default router;
