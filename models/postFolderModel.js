@@ -15,7 +15,7 @@ const fileSchema = new mongoose.Schema(
   // { _id: false } // Prevents MongoDB from creating an unnecessary `_id` for each file
 );
 
-const postSchema = new mongoose.Schema(
+const PostFolderSchema = new mongoose.Schema(
   {
     type: {
       type: String,
@@ -54,7 +54,7 @@ const postSchema = new mongoose.Schema(
     },
     parentFolderId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Post", // Points to another post acting as a folder
+      ref: "PostFolder", // Points to another post acting as a folder
       default: null,
     },
     taggedEmails: {
@@ -83,7 +83,7 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const PostFolder = mongoose.model("PostFolder", postSchema);
+const PostFolder = mongoose.model("PostFolder", PostFolderSchema);
 export default PostFolder;
 
 // updating file name consider this recommendation

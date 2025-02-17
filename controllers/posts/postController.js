@@ -7,6 +7,7 @@ import { checkProjectExists } from "../../services/inviteService.js";
 import {
   createPostOrFolderSchema,
   getPostsAndFoldersSchema,
+  updateNameSchema,
   updateStatusSchema,
 } from "../../validations/postValidation.js";
 import { updateNewPostSchema } from "../../validations/updatePostValidataion.js";
@@ -385,5 +386,81 @@ export const getPostsAndFolders = async (req, res) => {
   } catch (error) {
     console.error("Error fetching posts and folders:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const renamePostOrFolder = async (req, res) => {
+  try {
+    const { fileId, name } = req.body;
+    const { postId } = req.params;
+
+    // Validate input
+    const validationResult = updateNameSchema.safeParse({
+      postId,
+      fileId,
+      name,
+    });
+    if (!validationResult.success) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: validationResult.error.format(),
+      });
+    }
+
+    // Fetch post
+    const post = await PostFolder.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post/Folder not found" });
+    }
+
+    if (post.type === "FOLDER") {
+      post.name = name;
+    } else if (post.type === "POST") {
+      if (!fileId) {
+        return res
+          .status(400)
+          .json({ message: "fileId is required for posts" });
+      }
+      const file = post.files.find((file) => file._id.toString() === fileId);
+      if (!file) {
+        return res.status(404).json({ message: "File not found in the post" });
+      }
+      file.name = name;
+    }
+
+    await post.save();
+    res.status(200).json({ message: "Update successful" });
+  } catch (error) {
+    console.error("Error updating post/folder:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getPostsByProjectId = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    // Validate projectId
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: "Invalid projectId" });
+    }
+
+    const posts = await PostFolder.find({ projectId })
+      .populate("createdBy", "name email") // Adjust fields as needed
+      .populate("parentFolderId", "name") // If you need folder name
+      .lean(); // Converts to plain JS object
+
+    console.log(posts);
+
+    if (!posts.length) {
+      return res
+        .status(404)
+        .json({ message: "No posts found for this project" });
+    }
+
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

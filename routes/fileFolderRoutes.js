@@ -2,6 +2,8 @@ import express from "express";
 import {
   createPostOrFolder,
   getPostsAndFolders,
+  getPostsByProjectId,
+  renamePostOrFolder,
   updatePostFolder,
   updatePostStatus,
 } from "../controllers/posts/postController.js";
@@ -17,5 +19,7 @@ router.post("/", createPostOrFolder);
 router.put("/:postId", updatePostFolder);
 router.put("/:postId/status", updatePostStatus);
 router.get("/posts-folders", getPostsAndFolders);
+router.put("/rename/:postId", renamePostOrFolder);
+router.get("/:projectId", getPostsByProjectId);
 
 export default router;

@@ -141,6 +141,20 @@ export const getPostsAndFoldersSchema = z.object({
   }),
 });
 
+// Zod schema validation
+export const updateNameSchema = z.object({
+  postId: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+    message: "Invalid postId",
+  }),
+  fileId: z
+    .string()
+    .optional()
+    .refine((val) => !val || mongoose.Types.ObjectId.isValid(val), {
+      message: "Invalid fileId",
+    }),
+  name: z.string().min(1, "Name is required"),
+});
+
 // ✅ Positive Test Cases
 //   {
 //     "type": "folder",
