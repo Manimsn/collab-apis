@@ -20,20 +20,28 @@ const generateFiles = (category, fileCount = 5) => {
   if (!fileTypes.length) return []; // No files allowed for this category
 
   return Array.from({
-    length: faker.datatype.number({ min: 1, max: fileCount }),
+    length: faker.number.int({ min: 1, max: fileCount }),
   }).map(() => ({
     name: faker.system.fileName(),
-    fileType: faker.random.arrayElement(fileTypes),
+    fileType: faker.helpers.arrayElement(fileTypes),
     description: faker.lorem.sentence(),
   }));
 };
 
-export const generatePost = async (overrides = {}) => {
-  const category = faker.random.arrayElement(Object.values(categories));
-  const files = generateFiles(category);
+export const generatePost = async (
+  projectId,
+  createdBy,
+  taggedEmails,
+  type,
+  parentFolderId,
+  overrides
+) => {
+  // const category = faker.random.arrayElement(Object.values(categories));
+  const category = faker.helpers.arrayElement(Object.values(categories));
+  const files = type === "FOLDER" ? [] : generateFiles(category);
 
   return {
-    type: faker.random.arrayElement(["POST", "FOLDER"]),
+    type: type ? type : faker.helpers.arrayElement(["POST", "FOLDER"]),
     name: faker.lorem.words(3),
     description: faker.lorem.sentence(),
     isBlocker: faker.datatype.boolean(),
@@ -49,18 +57,20 @@ export const generatePost = async (overrides = {}) => {
 };
 
 export const createPost = async (
-  overrides = {},
   projectId,
-  parentFolderId = null,
   createdBy,
-  taggedEmails
+  taggedEmails,
+  type,
+  parentFolderId = null,
+  overrides = {}
 ) => {
   const postData = await generatePost(
-    overrides,
     projectId,
-    parentFolderId,
     createdBy,
-    taggedEmails
+    taggedEmails,
+    type,
+    parentFolderId,
+    overrides
   );
   return await PostFolder.create(postData);
 };

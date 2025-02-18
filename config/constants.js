@@ -89,6 +89,7 @@ export const categoryEnum = [
   categories.RENDERINGS,
   categories.VIDEO,
   categories.SPECIFICATION,
+  categories.SIDEBYSIDE,
   categories.MOODBAORD,
   categories.THREEDMODELS,
   categories.SURVEY,

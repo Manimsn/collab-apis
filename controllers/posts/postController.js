@@ -419,7 +419,7 @@ export const renamePostOrFolder = async (req, res) => {
     // Fetch file IDs from files array
     const fileIds = post ? post?.files.map((f) => f._id) : [];
 
-    if (post.createdBy !== userId) {
+    if (post.createdBy.toString() !== userId) {
       // Authorization check
       const isAuthorized = await isUserAuthorized(
         userId,
@@ -429,7 +429,6 @@ export const renamePostOrFolder = async (req, res) => {
         fileIds,
         true
       );
-      console.log("userId---------isAuthorized", isAuthorized);
 
       if (!isAuthorized) {
         return res
