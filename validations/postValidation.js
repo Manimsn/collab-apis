@@ -155,6 +155,19 @@ export const updateNameSchema = z.object({
   name: z.string().min(1, "Name is required"),
 });
 
+export const updateParentFolderIdSchema = z.object({
+  ids: z.array(
+    z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+      message: "Invalid MongoDB ObjectId",
+    })
+  ),
+  parentFolderId: z
+    .string()
+    .refine((val) => mongoose.Types.ObjectId.isValid(val), {
+      message: "Invalid MongoDB ObjectId",
+    }),
+});
+
 // ✅ Positive Test Cases
 //   {
 //     "type": "folder",

@@ -8,6 +8,7 @@ import {
   createPostOrFolderSchema,
   getPostsAndFoldersSchema,
   updateNameSchema,
+  updateParentFolderIdSchema,
   updateStatusSchema,
 } from "../../validations/postValidation.js";
 import { updateNewPostSchema } from "../../validations/updatePostValidataion.js";
@@ -486,5 +487,70 @@ export const getPostsByProjectId = async (req, res) => {
   } catch (error) {
     console.error("Error fetching posts:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const updateParentFolderId = async (req, res) => {
+  const validation = updateParentFolderIdSchema.safeParse(req.body);
+
+  if (!validation.success) {
+    return res.status(400).json({
+      message: "Invalid request data",
+      errors: validation.error.errors,
+    });
+  }
+
+  const { ids, parentFolderId } = validation.data;
+  const { userId, email } = req.user;
+
+  try {
+    // Check if all provided ids exist
+    const existingItems = await PostFolder.find({ _id: { $in: ids } });
+    if (existingItems.length !== ids.length) {
+      return res.status(404).json({ message: "One or more items not found" });
+    }
+
+    // Check if the parent folder exists
+    if (parentFolderId) {
+      const parentFolder = await PostFolder.findById(parentFolderId);
+      if (!parentFolder) {
+        return res.status(404).json({ message: "Parent folder not found" });
+      }
+
+      if (parentFolder.type !== FILETYPE.FOLDER) {
+        return res
+          .status(400)
+          .json({ message: "Parent must be a folder, not a post" });
+      }
+    }
+
+    // Authorization check for each item
+    for (const item of existingItems) {
+      if (item.createdBy.toString() !== userId) {
+        const isAuthorized = await isUserAuthorized(
+          userId,
+          email,
+          item.projectId,
+          item.category,
+          [item._id],
+          false
+        );
+
+        if (!isAuthorized) {
+          return res
+            .status(403)
+            .json({ message: "Unauthorized to update this post" });
+        }
+      }
+    }
+
+    // Proceed with the update
+    await PostFolder.updateMany(
+      { _id: { $in: ids } },
+      { $set: { parentFolderId } }
+    );
+    res.status(200).json({ message: "Parent folder ID updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating parent folder ID", error });
   }
 };

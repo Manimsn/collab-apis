@@ -4,6 +4,7 @@ import {
   getPostsAndFolders,
   getPostsByProjectId,
   renamePostOrFolder,
+  updateParentFolderId,
   updatePostFolder,
   updatePostStatus,
 } from "../controllers/posts/postController.js";
@@ -15,6 +16,7 @@ const router = express.Router();
 // router.post("/", createFilesWithPost); // Bulk create
 // router.post("/", createFilesWithPost); // Bulk create
 router.post("/", createPostOrFolder);
+router.put("/move-items", updateParentFolderId);
 // router.put("/:postId", updatePost);
 router.put("/:postId", updatePostFolder);
 router.put("/:postId/status", updatePostStatus);
