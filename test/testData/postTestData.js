@@ -34,11 +34,23 @@ export const generatePost = async (
   taggedEmails,
   type,
   parentFolderId,
+  newcategory,
+  newfiles,
+  hasDifferentParent,
   overrides
 ) => {
   // const category = faker.random.arrayElement(Object.values(categories));
-  const category = faker.helpers.arrayElement(Object.values(categories));
-  const files = type === "FOLDER" ? [] : generateFiles(category);
+  const category =
+    newcategory !== null && newcategory !== undefined
+      ? newcategory
+      : faker.helpers.arrayElement(Object.values(categories));
+
+  const files =
+    newfiles && newfiles.length > 0
+      ? newfiles
+      : type === "FOLDER"
+      ? []
+      : generateFiles(category);
 
   return {
     type: type ? type : faker.helpers.arrayElement(["POST", "FOLDER"]),
@@ -46,6 +58,7 @@ export const generatePost = async (
     description: faker.lorem.sentence(),
     isBlocker: faker.datatype.boolean(),
     isFeed: faker.datatype.boolean(),
+    hasDifferentParent,
     projectId,
     createdBy,
     category,
@@ -62,6 +75,9 @@ export const createPost = async (
   taggedEmails,
   type,
   parentFolderId = null,
+  newcategory = null,
+  newfiles = [],
+  hasDifferentParent = null,
   overrides = {}
 ) => {
   const postData = await generatePost(
@@ -70,6 +86,9 @@ export const createPost = async (
     taggedEmails,
     type,
     parentFolderId,
+    newcategory,
+    newfiles,
+    hasDifferentParent,
     overrides
   );
   return await PostFolder.create(postData);

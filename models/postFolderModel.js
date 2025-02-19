@@ -6,6 +6,11 @@ const fileSchema = new mongoose.Schema(
     name: { type: String, required: true },
     fileType: { type: String, required: true },
     description: { type: String },
+    parentFolderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PostFolder", // Points to another post acting as a folder
+      default: null,
+    },
     // createdBy: {
     //   type: mongoose.Schema.Types.ObjectId,
     //   required: true,
@@ -34,6 +39,10 @@ const PostFolderSchema = new mongoose.Schema(
       default: null, // Ensures it is null if not provided
     },
     isFeed: {
+      type: Boolean,
+      default: null, // Ensures it is null if not provided
+    },
+    hasDifferentParent: {
       type: Boolean,
       default: null, // Ensures it is null if not provided
     },
