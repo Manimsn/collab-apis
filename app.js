@@ -13,6 +13,7 @@ import userRoutes from "./routes/users.js"; // Use ESM import
 
 import projectRoutes from "./routes/projects.js"; // Use ESM import
 import fileRoutes from "./routes/fileFolderRoutes.js"; // Use ESM import
+import categoriesRoutes from "./routes/categories/categoriesRoutes.js"; // Use ESM import
 import errorHandler from "./middlewares/errorHandler.js"; // Use ESM import
 import verifyAccessToken from "./middlewares/authMiddleware.js"; // Use ESM import
 
@@ -37,6 +38,7 @@ app.use("/users", userRoutes);
 app.use(verifyAccessToken);
 app.use("/projects", projectRoutes);
 app.use("/post", fileRoutes);
+app.use("/category", categoriesRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
