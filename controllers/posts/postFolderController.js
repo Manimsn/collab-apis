@@ -40,7 +40,6 @@ export const fetchPostFolderHierarchy = async (req, res) => {
 
     // Step 1: Store all records in a Map
     allRecords.forEach((item) => {
-      console.log(item.FOLDER);
       if (item.type === "FOLDER") {
         item.children = []; // Initialize children array
       }
@@ -54,22 +53,27 @@ export const fetchPostFolderHierarchy = async (req, res) => {
     // Step 2: Attach children to their parent folders
     allRecords.forEach((item) => {
       if (item.type === "POST") {
-        // Ensure post.files exists before modifying
         if (Array.isArray(item.files)) {
           item.files.forEach((file) => {
-            file.parentFolderId = item.parentFolderId || null; // Attach parentFolderId for verification
-          });
+            // Determine the correct parentFolderId for each file
+            const fileParentId =
+              item.hasDifferentParent && file.parentFolderId
+                ? file.parentFolderId.toString()
+                : item.parentFolderId?.toString();
 
-          if (item.parentFolderId) {
-            // Attach only files to the parent folder
-            const parent = recordMap.get(item.parentFolderId.toString());
-            if (parent) {
-              parent.children.push(...item.files);
+            file.parentFolderId = fileParentId || null; // Attach correct parentFolderId for verification
+
+            if (fileParentId) {
+              // Attach file to its correct parent
+              const parent = recordMap.get(fileParentId);
+              if (parent) {
+                parent.children.push(file);
+              }
+            } else {
+              // If no parent, treat file as root
+              rootItems.push(file);
             }
-          } else {
-            // If it's a root POST, add files to rootItems
-            rootItems.push(...item.files);
-          }
+          });
         }
       } else if (item.parentFolderId) {
         // Normal handling for FOLDERS and FILES
