@@ -168,6 +168,40 @@ export const updateParentFolderIdSchema = z.object({
     }),
 });
 
+export const fetchPostsSchema = z
+  .object({
+    projectId: z.string().optional(),
+    type: z.enum(["ACTIVITIES", "DECISION", "FEED"]),
+    page: z.string().default("1").transform(Number),
+    limit: z.string().default("10").transform(Number),
+    createdBy: z
+      .string()
+      .optional()
+      .transform((val) => (val ? val.split(",") : [])),
+    categories: z
+      .string()
+      .optional()
+      .transform((val) => (val ? val.split(",") : [])),
+    taggedEmails: z
+      .string()
+      .optional()
+      .transform((val) => (val ? val.split(",") : [])),
+    // taggedEmails: z.array(z.string()).optional(),
+    sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  })
+  .refine(
+    (data) => {
+      if (data.type !== "FEED" && !data.projectId) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "projectId is required for activities and decisions",
+      path: ["projectId"],
+    }
+  );
+
 // ✅ Positive Test Cases
 //   {
 //     "type": "folder",

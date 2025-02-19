@@ -2,10 +2,12 @@ import { FILETYPE } from "../../config/constants.js";
 import { messages } from "../../config/messages.js";
 import { isUserAuthorized } from "../../middlewares/authorizationService.js";
 import PostFolder from "../../models/postFolderModel.js";
+import Project from "../../models/Project.js";
 import UserProjectMapping from "../../models/UserProjectMapping.js";
 import { checkProjectExists } from "../../services/inviteService.js";
 import {
   createPostOrFolderSchema,
+  fetchPostsSchema,
   getPostsAndFoldersSchema,
   updateNameSchema,
   updateParentFolderIdSchema,
@@ -552,5 +554,73 @@ export const updateParentFolderId = async (req, res) => {
     res.status(200).json({ message: "Parent folder ID updated successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error updating parent folder ID", error });
+  }
+};
+
+export const fetchPosts = async (req, res) => {
+  try {
+    // Validate request parameters
+    const params = fetchPostsSchema.parse(req.query);
+
+    let projectIds = [];
+
+    if (params.type === "FEED") {
+      // Fetch projects the user owns
+      const ownedProjects = await Project.find({
+        createdBy: req.user.userId,
+      }).select("_id");
+
+      // Fetch projects the user has access to
+      const userProjects = await UserProjectMapping.find({
+        email: req.user.email,
+      }).select("projectId");
+      const accessibleProjectIds = userProjects.map((upm) => upm.projectId);
+
+      // Consolidate project IDs
+      projectIds = [
+        ...ownedProjects.map((p) => p._id),
+        ...accessibleProjectIds,
+      ];
+    } else {
+      projectIds = [params.projectId];
+    }
+    // Fetch posts based on project type and filters
+    const postQuery = { projectId: { $in: projectIds }, isFeed: true };
+    if (params.type === "DECISION") {
+      postQuery.isBlocker = true;
+    }
+    if (params.createdBy.length > 0) {
+      postQuery.createdBy = { $in: params.createdBy };
+    }
+    if (params.categories.length > 0) {
+      postQuery.category = { $in: params.categories };
+    }
+    if (params.taggedEmails.length > 0) {
+      postQuery.taggedEmails = { $in: params.taggedEmails };
+    }
+
+    // Pagination
+    const skip = (params.page - 1) * params.limit;
+    const totalPosts = await PostFolder.countDocuments(postQuery);
+    const totalPages = Math.ceil(totalPosts / params.limit);
+
+    // Fetch posts with pagination and sorting
+    const posts = await PostFolder.find(postQuery)
+      .sort({ createdAt: params.sortOrder })
+      .skip(skip)
+      .limit(params.limit);
+
+    // Response with pagination metadata
+    res.json({
+      posts,
+      pagination: {
+        totalPosts,
+        totalPages,
+        currentPage: params.page,
+        limit: params.limit,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 };
