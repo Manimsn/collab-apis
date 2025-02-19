@@ -53,7 +53,26 @@ export const fetchPostFolderHierarchy = async (req, res) => {
 
     // Step 2: Attach children to their parent folders
     allRecords.forEach((item) => {
-      if (item.parentFolderId) {
+      if (item.type === "POST") {
+        // Ensure post.files exists before modifying
+        if (Array.isArray(item.files)) {
+          item.files.forEach((file) => {
+            file.parentFolderId = item.parentFolderId || null; // Attach parentFolderId for verification
+          });
+
+          if (item.parentFolderId) {
+            // Attach only files to the parent folder
+            const parent = recordMap.get(item.parentFolderId.toString());
+            if (parent) {
+              parent.children.push(...item.files);
+            }
+          } else {
+            // If it's a root POST, add files to rootItems
+            rootItems.push(...item.files);
+          }
+        }
+      } else if (item.parentFolderId) {
+        // Normal handling for FOLDERS and FILES
         const parent = recordMap.get(item.parentFolderId.toString());
         if (parent) {
           parent.children.push(item);
