@@ -36,8 +36,7 @@ export const generatePost = async (
   parentFolderId,
   newcategory,
   newfiles,
-  hasDifferentParent,
-  overrides
+  hasDifferentParent
 ) => {
   // const category = faker.random.arrayElement(Object.values(categories));
   const category =
@@ -65,7 +64,6 @@ export const generatePost = async (
     parentFolderId,
     taggedEmails,
     files,
-    ...overrides,
   };
 };
 
@@ -77,8 +75,7 @@ export const createPost = async (
   parentFolderId = null,
   newcategory = null,
   newfiles = [],
-  hasDifferentParent = null,
-  overrides = {}
+  hasDifferentParent = null
 ) => {
   const postData = await generatePost(
     projectId,
@@ -88,8 +85,7 @@ export const createPost = async (
     parentFolderId,
     newcategory,
     newfiles,
-    hasDifferentParent,
-    overrides
+    hasDifferentParent
   );
   return await PostFolder.create(postData);
 };

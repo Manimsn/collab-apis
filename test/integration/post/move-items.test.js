@@ -28,7 +28,7 @@ describe("updateParentFolderId Controller", () => {
   beforeEach(async () => {
     // Create a user and generate a token
     user = await createUser();
-    console.log("user------", user);
+
     token = generateAccessToken({
       _id: user._id,
       email: user.email,

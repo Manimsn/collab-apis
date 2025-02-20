@@ -43,8 +43,7 @@ describe("GET /post/fetch-hierarchy", () => {
       [],
       "FOLDER",
       null,
-      "Images",
-      {}
+      "Images"
     );
     subFolder = await createPost(
       project._id,
@@ -52,8 +51,7 @@ describe("GET /post/fetch-hierarchy", () => {
       [],
       "FOLDER",
       folder._id,
-      "Images",
-      {}
+      "Images"
     );
 
     postWithDifferentParent = await createPost(
@@ -71,8 +69,7 @@ describe("GET /post/fetch-hierarchy", () => {
         },
         { name: "File B", fileType: "IMAGE" }, // Should default to post.parentFolderId
       ],
-      true,
-      {}
+      true
     );
     post = await createPost(
       project._id,
@@ -82,11 +79,10 @@ describe("GET /post/fetch-hierarchy", () => {
       folder._id,
       "Images",
       [{ fileId: "file_103", name: "File C", fileType: "PDF" }],
-      false,
-      {}
+      false
     );
   });
-//   console.dir(res.body, { depth: null });
+
   it("should successfully return a hierarchical structure", async () => {
     const res = await supertest(app)
       .get(`${BASE_URL}`)
@@ -127,46 +123,46 @@ describe("GET /post/fetch-hierarchy", () => {
     expect(res.body.some((file) => file.name === folder.name)).to.be.true; // Root-level file
   });
 
-    it("should return 400 for missing projectId", async () => {
-      const res = await supertest(app)
-        .get(`${BASE_URL}`)
-        .query({ category: "posts" })
-        .set("Authorization", `Bearer ${authToken}`);
+  it("should return 400 for missing projectId", async () => {
+    const res = await supertest(app)
+      .get(`${BASE_URL}`)
+      .query({ category: "posts" })
+      .set("Authorization", `Bearer ${authToken}`);
 
-      expect(res.status).to.equal(400);
-      expect(res.body.message).to.equal("Validation failed");
-    });
+    expect(res.status).to.equal(400);
+    expect(res.body.message).to.equal("Validation failed");
+  });
 
-    it("should return 400 for invalid projectId", async () => {
-      const res = await supertest(app)
-        .get(`${BASE_URL}`)
-        .query({ projectId: "invalid_id", category: "posts" })
-        .set("Authorization", `Bearer ${authToken}`);
+  it("should return 400 for invalid projectId", async () => {
+    const res = await supertest(app)
+      .get(`${BASE_URL}`)
+      .query({ projectId: "invalid_id", category: "posts" })
+      .set("Authorization", `Bearer ${authToken}`);
 
-      expect(res.status).to.equal(400);
-      expect(res.body.message).to.equal("Validation failed");
-    });
+    expect(res.status).to.equal(400);
+    expect(res.body.message).to.equal("Validation failed");
+  });
 
-    it("should return 404 if no records found", async () => {
-      const newProject = await createProject(owner._id, owner.email);
-      const res = await supertest(app)
-        .get(`${BASE_URL}`)
-        .query({ projectId: newProject._id.toString(), category: "posts" })
-        .set("Authorization", `Bearer ${authToken}`);
+  it("should return 404 if no records found", async () => {
+    const newProject = await createProject(owner._id, owner.email);
+    const res = await supertest(app)
+      .get(`${BASE_URL}`)
+      .query({ projectId: newProject._id.toString(), category: "posts" })
+      .set("Authorization", `Bearer ${authToken}`);
 
-      expect(res.status).to.equal(404);
-      expect(res.body.message).to.equal("No records found.");
-    });
+    expect(res.status).to.equal(404);
+    expect(res.body.message).to.equal("No records found.");
+  });
 
-    it("should return 500 on server error", async () => {
-      sinon.stub(PostFolder, "find").throws(new Error("Database failure"));
-      const res = await supertest(app)
-        .get(`${BASE_URL}`)
-        .query({ projectId: project._id.toString(), category: "posts" })
-        .set("Authorization", `Bearer ${authToken}`);
+  it("should return 500 on server error", async () => {
+    sinon.stub(PostFolder, "find").throws(new Error("Database failure"));
+    const res = await supertest(app)
+      .get(`${BASE_URL}`)
+      .query({ projectId: project._id.toString(), category: "posts" })
+      .set("Authorization", `Bearer ${authToken}`);
 
-      expect(res.status).to.equal(500);
-      expect(res.body.message).to.equal("Internal Server Error");
-      PostFolder.find.restore();
-    });
+    expect(res.status).to.equal(500);
+    expect(res.body.message).to.equal("Internal Server Error");
+    PostFolder.find.restore();
+  });
 });

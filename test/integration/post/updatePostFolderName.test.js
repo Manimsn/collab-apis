@@ -29,9 +29,9 @@ describe("PATCH /post/rename", () => {
     authToken = generateAccessToken({ _id: owner._id, email: owner.email });
     project = await createProject(owner._id, owner.email);
 
-    folder = await createPost(project._id, owner._id, [], "FOLDER", null, {});
-    // console.log("folder", folder);
-    post = await createPost(project._id, owner._id, [], "POST", folder._id, {});
+    folder = await createPost(project._id, owner._id, [], "FOLDER", null);
+
+    post = await createPost(project._id, owner._id, [], "POST", folder._id);
     file = post.files[0]; //_id
   });
 
