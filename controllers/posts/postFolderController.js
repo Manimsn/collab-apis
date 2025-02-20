@@ -90,3 +90,91 @@ export const fetchPostFolderHierarchy = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// Zod schema for request validation
+const updateParentFolderSchema = z.object({
+  parentFolderId: z
+    .string()
+    .refine((id) => mongoose.Types.ObjectId.isValid(id), {
+      message: "Invalid parentFolderId",
+    }),
+  files: z.array(
+    z.object({
+      _id: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
+        message: "Invalid fileId",
+      }),
+      postId: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
+        message: "Invalid postId",
+      }),
+    })
+  ),
+});
+
+export const updateFilesParentFolder = async (req, res) => {
+  try {
+    // Validate request body
+    const { parentFolderId, files } = updateParentFolderSchema.parse(req.body);
+
+    // Check if parentFolderId exists and is of type "FOLDER"
+    const parentFolder = await PostFolder.findOne({
+      _id: parentFolderId,
+      type: "FOLDER",
+    });
+
+    if (!parentFolder) {
+      return res
+        .status(400)
+        .json({ message: "Invalid parentFolderId. It must be a FOLDER." });
+    }
+
+    // Group files by postId for efficient bulk updates
+    const groupedUpdates = files.reduce((acc, { _id, postId }) => {
+      if (!acc[postId]) acc[postId] = [];
+      acc[postId].push(_id);
+      return acc;
+    }, {});
+
+    // Prepare bulk operations
+    const bulkOperations = Object.entries(groupedUpdates).map(
+      ([postId, fileIds]) => ({
+        updateOne: {
+          filter: { _id: postId, "files._id": { $in: fileIds } },
+          update: { $set: { "files.$[elem].parentFolderId": parentFolderId } },
+          arrayFilters: [{ "elem._id": { $in: fileIds } }],
+        },
+      })
+    );
+
+    // Execute bulk update
+    const result = await PostFolder.bulkWrite(bulkOperations);
+
+    // Construct response
+    const modifiedCount = result.modifiedCount;
+    const failedUpdates = files
+      .filter(
+        ({ _id, postId }) =>
+          !result.modifiedCount || !groupedUpdates[postId].includes(_id)
+      )
+      .map(({ _id, postId }) => ({
+        _id,
+        postId,
+        error: "File not found or update failed",
+      }));
+
+    return res.status(200).json({
+      success: failedUpdates.length === 0,
+      message:
+        failedUpdates.length > 0
+          ? "Some files could not be updated"
+          : "All files updated successfully",
+      modifiedCount,
+      successfulUpdates: files.filter(
+        ({ _id, postId }) =>
+          result.modifiedCount && groupedUpdates[postId].includes(_id)
+      ),
+      failedUpdates,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
