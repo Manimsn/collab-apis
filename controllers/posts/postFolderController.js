@@ -1,14 +1,11 @@
-import { z } from "zod";
-import mongoose from "mongoose";
 import PostFolder from "../../models/postFolderModel.js";
-
-// ✅ Zod schema for validating request payload
-const fetchPostFolderSchema = z.object({
-  projectId: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
-    message: "Invalid projectId",
-  }),
-  category: z.string().min(1, "Category is required"),
-});
+import User from "../../models/User.js";
+import UserProjectMapping from "../../models/UserProjectMapping.js";
+import {
+  fetchPostFolderSchema,
+  fileAccessSchema,
+  updateParentFolderSchema,
+} from "../../validations/fileFolderValidation.js";
 
 /**
  * Fetch hierarchical records (Folders, Files from Posts, Links) based on projectId and category.
@@ -118,47 +115,28 @@ export const getFilesByProjectAndCategory = async (req, res) => {
   }
 };
 
-// Zod schema for request validation
-const updateParentFolderSchema = z
-  .object({
-    parentFolderId: z
-      .string()
-      .refine((id) => mongoose.Types.ObjectId.isValid(id), {
-        message: "Invalid parentFolderId",
-      }),
+export const getUserProjectMappingById = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-    files: z
-      .array(
-        z.object({
-          _id: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
-            message: "Invalid fileId",
-          }),
-          postId: z
-            .string()
-            .refine((id) => mongoose.Types.ObjectId.isValid(id), {
-              message: "Invalid postId",
-            }),
-        })
-      )
-      .optional(), // Optional but needs at least one item if provided
-
-    folderAndLinks: z
-      .array(
-        z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
-          message: "Invalid _id in folderAndLinks",
-        })
-      )
-      .optional(), // Optional but needs at least one item if provided
-  })
-  .refine(
-    (data) =>
-      (data.files?.length ?? 0) > 0 || (data.folderAndLinks?.length ?? 0) > 0,
-    {
-      message:
-        "Either files or folderAndLinks must be provided with at least one item",
-      path: ["files", "folderAndLinks"],
+    if (!id) {
+      return res.status(400).json({ message: "_id parameter is required" });
     }
-  );
+
+    const userProjectMapping = await UserProjectMapping.findById(id).lean();
+
+    if (!userProjectMapping) {
+      return res
+        .status(404)
+        .json({ message: "No record found with the given _id" });
+    }
+
+    res.status(200).json(userProjectMapping);
+  } catch (error) {
+    console.error("Error fetching user project mapping:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 export const updateFilesParentFolder = async (req, res) => {
   try {
@@ -285,5 +263,58 @@ export const updateFilesParentFolder = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getUsersWithFileAccess = async (req, res) => {
+  try {
+    // ✅ Validate query parameters
+    const validation = fileAccessSchema.safeParse(req.query);
+    if (!validation.success) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: validation.error.format(),
+      });
+    }
+
+    // Extract validated values
+    const { projectId, category, fileOrFolderId } = validation.data;
+
+    // ✅ Query UserProjectMapping to get emails with file access
+    const userMappings = await UserProjectMapping.find(
+      {
+        projectId,
+        fileOrFolderAccess: {
+          $elemMatch: {
+            category: category,
+            files: { $elemMatch: { fileOrFolderId: fileOrFolderId } },
+          },
+        },
+        role: { $exists: false },
+        status: "invited",
+      },
+      { email: 1, _id: 0 }
+    );
+
+    // Extract unique emails
+    const emails = [...new Set(userMappings.map((u) => u.email))];
+    console.log(emails);
+
+    if (emails.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No users found with file access" });
+    }
+
+    // ✅ Query User collection to get user details
+    const users = await User.find(
+      { email: { $in: emails } },
+      { _id: 1, firstName: 1, lastName: 1, email: 1 }
+    );
+
+    return res.status(200).json({ users });
+  } catch (error) {
+    console.error("Error fetching users with file access:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

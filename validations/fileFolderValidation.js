@@ -46,3 +46,60 @@ export const createFilesWithPostSchema = z.object({
       })
   ),
 });
+
+// ✅ Zod schema for validating request payload
+export const fetchPostFolderSchema = z.object({
+  projectId: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+    message: "Invalid projectId",
+  }),
+  category: z.string().min(1, "Category is required"),
+});
+
+// Zod schema for request validation
+export const updateParentFolderSchema = z
+  .object({
+    parentFolderId: z
+      .string()
+      .refine((id) => mongoose.Types.ObjectId.isValid(id), {
+        message: "Invalid parentFolderId",
+      }),
+
+    files: z
+      .array(
+        z.object({
+          _id: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
+            message: "Invalid fileId",
+          }),
+          postId: z
+            .string()
+            .refine((id) => mongoose.Types.ObjectId.isValid(id), {
+              message: "Invalid postId",
+            }),
+        })
+      )
+      .optional(), // Optional but needs at least one item if provided
+
+    folderAndLinks: z
+      .array(
+        z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
+          message: "Invalid _id in folderAndLinks",
+        })
+      )
+      .optional(), // Optional but needs at least one item if provided
+  })
+  .refine(
+    (data) =>
+      (data.files?.length ?? 0) > 0 || (data.folderAndLinks?.length ?? 0) > 0,
+    {
+      message:
+        "Either files or folderAndLinks must be provided with at least one item",
+      path: ["files", "folderAndLinks"],
+    }
+  );
+
+// Validation schema for request params
+export const fileAccessSchema = z.object({
+  projectId: z.string().min(1, "projectId is required"), // Ensure non-empty string
+  category: z.string().min(1, "category is required"), // Ensure non-empty string
+  fileOrFolderId: z.string().min(1, "fileOrFolderId is required"), // Ensure non-empty string
+});
