@@ -7,6 +7,10 @@ import AuthProvider from "@/components/common/AuthProvider";
 import PrivateHeader from "@/components/layout/PrivateHeader";
 import Sidebar from "@/components/layout/Sidebar";
 import AuthLayout from "@/components/layout/AuthLayout";
+import { Provider } from "react-redux";
+import { store } from "@/redux/store";
+import Providers from "@/components/common/Providers";
+import ThemeProvider from "@/components/common/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,14 +35,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <PathnameProvider>
-            <AuthLayout>{children}</AuthLayout>{" "}
-            {/* ✅ Pass children normally */}
-          </PathnameProvider>
-        </AuthProvider>
+        <Providers>
+          <ThemeProvider>
+            <AuthProvider>
+              <PathnameProvider>
+                <AuthLayout>{children}</AuthLayout>{" "}
+                {/* ✅ Pass children normally */}
+              </PathnameProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

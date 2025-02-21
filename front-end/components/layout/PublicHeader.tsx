@@ -1,4 +1,6 @@
+import React from "react";
 import Link from "next/link";
+import ThemeToggle from "../common/ThemeToggle";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -16,7 +18,7 @@ const navLinks = [
 ];
 
 const NavLinks = () => {
-  console.log("Public Header");
+  console.log("Public Header Rendered");
   return (
     <nav>
       <ul className="flex space-x-4">
@@ -27,9 +29,14 @@ const NavLinks = () => {
             </Link>
           </li>
         ))}
+        <div>
+          <ThemeToggle />
+        </div>
       </ul>
     </nav>
   );
 };
 
-export default NavLinks;
+// ✅ Wrap the named function component inside React.memo()
+
+export default React.memo(NavLinks);
