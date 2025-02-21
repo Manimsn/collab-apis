@@ -1,3 +1,5 @@
+import { z } from "zod";
+import mongoose from "mongoose";
 import Project from "../../models/Project.js";
 import User from "../../models/User.js";
 import UserProjectMapping from "../../models/UserProjectMapping.js";
@@ -164,6 +166,42 @@ export const deleteUserMappingDetails = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in cleanup process:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Zod schema for ID validation
+const idSchema = z
+  .string()
+  .refine((id) => mongoose.Types.ObjectId.isValid(id), {
+    message: "Invalid user ID format",
+  });
+
+export const getUserById = async (req, res) => {
+  try {
+    // Validate _id using Zod
+    const validationResult = idSchema.safeParse(req.params.userId);
+
+    if (!validationResult.success) {
+      return res
+        .status(400)
+        .json({ error: validationResult.error.errors[0].message });
+    }
+
+    const { userId } = req.params;
+
+    // Fetch user by ID
+    const user = await User.findById(userId).select(
+      "firstName lastName email designation location plan planType credits totalCredits balanceCredits downloadedModels createdAt updatedAt"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user details:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
