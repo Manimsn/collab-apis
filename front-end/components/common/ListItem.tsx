@@ -18,7 +18,7 @@ const ListItem = ({ children, setOpen }: any) => {
           setOpen(false);
         }
       }}
-      className="submenu-item group relative 2xl:ml-12"
+      className="submenu-item group relative lg:ml-12"
     >
       {childWithProps}
     </li>
