@@ -1,8 +1,8 @@
 "use client";
+import { useSelector, useDispatch } from "react-redux";
 
 import { toggleTheme } from "@/redux/slices/themeSlice";
 import { RootState } from "@/redux/store";
-import { useSelector, useDispatch } from "react-redux";
 import { ToggleThemeIcon } from "../icons";
 
 export default function ThemeToggle() {

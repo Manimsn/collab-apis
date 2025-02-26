@@ -1,9 +1,8 @@
-import Image from "next/image";
-import Link from "next/link";
 import React from "react";
-import ForwardArrow from "../icons/actions/ForwardArrowIcon";
+
 import UserMenu from "./user/UserMenu";
 import AuthButtons from "./auth/AuthButtons";
+import ThemeToggle from "./ThemeToggle";
 
 const AuthNavigation = () => {
   const userDetails = {
@@ -13,22 +12,31 @@ const AuthNavigation = () => {
     designation: "Manikandan",
     fileS3Id: "Manikandan",
   };
+
   const loginStatus = false;
   const loading = false;
 
   return (
-    <div className="sm:flex md:flex pr-3 hidden">
-      {loginStatus ? (
-        loading ? (
-          <div>Checking</div>
+    <>
+      <div className=" justify-end pr-16 sm:flex lg:pr-0">
+        <ThemeToggle />
+        {loginStatus ? (
+          loading ? (
+            <div className="hidden md:flex items-center gap-3">
+              <div className="w-24 flex flex-col justify-center items-end">
+                <div className="h-2.5 bg-light-4 rounded w-full mb-2"></div>
+                <div className="h-2 bg-light-4 rounded w-[80%]"></div>
+              </div>
+              <div className="w-[45px] h-[45px] bg-light-4 rounded-full " />
+            </div>
+          ) : (
+            <UserMenu userDetails={userDetails} />
+          )
         ) : (
-          <UserMenu userDetails={userDetails} />
-        )
-      ) : (
-        <AuthButtons />
-        // <div>Check</div>
-      )}
-    </div>
+          <AuthButtons />
+        )}
+      </div>
+    </>
   );
 };
 

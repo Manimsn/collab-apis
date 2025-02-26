@@ -7,6 +7,20 @@
   --foreground: #171717;
 }
 
+@layer base {
+  @font-face {
+     font-family: "ClashGrotesk-Variable";
+     src: url("/fonts/ClashGrotesk-Variable.woff2"),
+        url("/fonts/ClashGrotesk-Variable.woff");
+  }
+
+  html {
+     -webkit-tap-highlight-color: transparent;
+  }
+}
+
+
+
 /* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

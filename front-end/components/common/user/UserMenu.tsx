@@ -12,7 +12,7 @@ const UserMenu = ({ userDetails }: { userDetails: any }) => {
   ];
 
   return (
-    <div id="user-menu" className="group relative hidden lg:block">
+    <div id="user-menu" className="group relative hidden md:block lg:block">
       <Link href="#" className="flex items-center">
         <p className="mr-2 text-right text-sm font-medium text-dark-1 dark:text-light-3 hidden xl:block">
           {userDetails?.firstName || userDetails?.emailAddress}{" "}

@@ -10,7 +10,7 @@ const DropdownItem = ({ dropdownLink, dropdownText, setOpen }: any) => {
           setOpen(false);
         }
       }}
-      className="block rounded px-4 py-[10px] text-sm text-body-color hover:bg-yellow hover:text-dark dark:text-dark-6"
+      className="block rounded px-4 py-[10px] text-sm  text-body-color hover:bg-yellow hover:text-dark dark:text-dark-6"
     >
       {dropdownText}
     </Link>

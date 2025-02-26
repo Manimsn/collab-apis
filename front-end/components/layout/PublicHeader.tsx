@@ -1,18 +1,15 @@
-"use client";
 import React, { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 import ListItem from "../common/ListItem";
 import LinkItem from "../common/LinkItem";
 import Dropdown from "../common/Dropdown";
 import DropdownItem from "../common/DropdownItem";
-import ThemeToggle from "../common/ThemeToggle";
-import { ForwardArrowIcon } from "../icons";
+import AuthNavigation from "../common/AuthNavigation";
 
-export default function Header() {
+const Navbar8 = () => {
   const [open, setOpen] = useState(false);
-
   const navigation = [
     {
       name: "3D MODELS",
@@ -39,21 +36,13 @@ export default function Header() {
   ];
 
   return (
-    // <header className="flex w-full items-center bg-white dark:bg-dark ">
-    // Default (w-full): Mobile-first approach (applies to all screens).
-    // sm:w-3/4: At 640px (small screens), width becomes 75%.
-    // md:w-1/2: At 768px (medium screens), width becomes 50%.
-    // lg:w-1/3: At 1024px (large screens), width becomes 33.33%.
-    // xl:w-1/4: At 1280px (extra-large screens), width becomes 25%.
-    // 2xl:w-1/5: At 1536px and above, width becomes 20%.
-    // bg-red sm:bg-green md:bg-blue lg:bg-yellow xl:bg-purple 2xl-pink
-    // red, blue, purple
+    //bg-red sm:bg-green md:bg-blue lg:bg-yellow xl:bg-purple 2xl-pink
     <header
-      className={`
-        lg:mx-4 xl:mx-4 lg:my-8 xl:my-6 flex 
-        w-full md:w-full md:max-w-none md:overflow-hidden lg:w-[97%] xl:w-[98.5%] items-center md:rounded-none lg:rounded-full bg-white px-6 py-3 shadow-md dark:bg-dark-3 h-16 font-inter font-semibold`}
+      className={`flex w-full items-center bg-white dark:bg-dark-3 h-16
+    font-inter font-semibold lg:mx-4 lg:my-6 lg:rounded-full lg:w-[97%] xl:w-[98%]
+    `}
     >
-      <div className="container mx-auto max-w-none 2xl:w-full xl:mx-2">
+      <div className="container mx-auto md:max-w-none xl:max-w-none md:mx-0 lg:mx-2 xl:mx-6">
         <div className="relative -mx-4 flex items-center justify-between">
           <div className="w-60 max-w-full px-4">
             <Link href="/#" className="block w-full py-5">
@@ -76,20 +65,20 @@ export default function Header() {
               />
             </Link>
           </div>
-          <div className="flex w-full items-center xl:justify-end px-4 xl:-mr-0 md:-mr-[6%]">
-            <div className="xl:w-[40%]">
+          <div className="flex w-full items-center justify-between px-4">
+            <div>
               <button
                 onClick={() => setOpen(!open)}
                 className={` ${
                   open && "navbarTogglerActive"
-                } absolute -right-4 top-1/2 block -translate-y-1/2 rounded-lg px-3 py-[6px] ring-primary focus:ring-2 lg:hidden`}
+                } absolute right-4 top-1/2 block -translate-y-1/2 rounded-lg px-3 py-[6px] ring-primary focus:ring-2 lg:hidden`}
               >
                 <span className="relative my-[6px] block h-[2px] w-[30px] bg-body-color dark:bg-white"></span>
                 <span className="relative my-[6px] block h-[2px] w-[30px] bg-body-color dark:bg-white"></span>
                 <span className="relative my-[6px] block h-[2px] w-[30px] bg-body-color dark:bg-white"></span>
               </button>
               <nav
-                className={`h-16 absolute right-4 xl:-ml-[75%] top-full z-50 w-full lg:w-full max-w-[250px] rounded-lg bg-white py-5 shadow lg:static lg:block lg:max-w-full lg:bg-transparent lg:px-6 lg:py-0 lg:shadow-none ${
+                className={`absolute right-4 top-full z-50 w-full max-w-[250px] rounded-lg py-5 shadow lg:static lg:block lg:w-full lg:max-w-full lg:bg-transparent lg:px-0 lg:py-0 lg:shadow-none ${
                   !open && "hidden"
                 } `}
               >
@@ -126,32 +115,13 @@ export default function Header() {
                 </ul>
               </nav>
             </div>
-            <div
-              // className={`
-              // w-[60%] md:w-[60%] lg:w-[46%] flex md:justify-end lg:justify-end`}
-              className="w-[90%] md:w-[50%] justify-end xl:w-[20%] flex xl:justify-end xl:-mr-[26%]"
-            >
-              <ThemeToggle />
-            </div>
-            <div className="hidden justify-end pr-16 md:pr-8 sm:flex lg:pr-0 md:w-[42%] xl:w-[40%]">
-              <Link
-                href="/#"
-                className="flex px-6 sm:px-0 md:px-4 lg:px-2 xl:px-2 sm:text-xs md:text-xs xl:text-base text-base md:justify-center items-center py-2.5  text-dark hover:text-primary dark:text-white "
-              >
-                LOG IN
-                <ForwardArrowIcon />
-              </Link>
 
-              <Link
-                href="/#"
-                className="flex justify-center items-center rounded-md bg-purple px-6 sm:text-xs xl:text-base text-base sm:px-0 md:px-4 py-2.5  text-white hover:bg-primary/90"
-              >
-                SIGN UP
-              </Link>
-            </div>
+            <AuthNavigation />
           </div>
         </div>
       </div>
     </header>
   );
-}
+};
+
+export default Navbar8;
