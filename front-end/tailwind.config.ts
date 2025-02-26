@@ -9,6 +9,22 @@ export default {
   darkMode: "class", // Enables class-based dark mode
   theme: {
     extend: {
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-15px)" },
+        },
+      },
+      animation: {
+        float: "float 2s ease-in-out infinite",
+      },
+      fontFamily: {
+        clash: ["clashGrotesk-Variable"],
+        mulish: ["Mulish", "sans-serif"],
+        palanquin: ["Palanquin", "sans-serif"],
+        montserrat: ["Montserrat", "sans-serif"],
+        inter: ["Inter", "sans-serif"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
