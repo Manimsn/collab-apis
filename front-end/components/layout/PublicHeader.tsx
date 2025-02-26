@@ -47,10 +47,11 @@ export default function Header() {
     // xl:w-1/4: At 1280px (extra-large screens), width becomes 25%.
     // 2xl:w-1/5: At 1536px and above, width becomes 20%.
     // bg-red sm:bg-green md:bg-blue lg:bg-yellow xl:bg-purple 2xl-pink
+    // red, blue, purple
     <header
       className={`
-        lg:mx-4 lg:my-8 xl:mx-4 xl:my-6 flex 
-        w-full lg:w-[97%] xl:w-[98.5%] items-center lg:rounded-full bg-white px-6 py-3 shadow-md dark:bg-dark-3 h-16 font-inter font-semibold`}
+        lg:mx-4 xl:mx-4 lg:my-8 xl:my-6 flex 
+        w-full md:w-full md:max-w-none md:overflow-hidden lg:w-[97%] xl:w-[98.5%] items-center md:rounded-none lg:rounded-full bg-white px-6 py-3 shadow-md dark:bg-dark-3 h-16 font-inter font-semibold`}
     >
       <div className="container mx-auto max-w-none 2xl:w-full xl:mx-2">
         <div className="relative -mx-4 flex items-center justify-between">
@@ -75,20 +76,20 @@ export default function Header() {
               />
             </Link>
           </div>
-          <div className="flex w-full items-center justify-between px-4">
-            <div>
+          <div className="flex w-full items-center xl:justify-end px-4 xl:-mr-0 md:-mr-[6%]">
+            <div className="xl:w-[40%]">
               <button
                 onClick={() => setOpen(!open)}
                 className={` ${
                   open && "navbarTogglerActive"
-                } absolute right-4 top-1/2 block -translate-y-1/2 rounded-lg px-3 py-[6px] ring-primary focus:ring-2 lg:hidden`}
+                } absolute -right-4 top-1/2 block -translate-y-1/2 rounded-lg px-3 py-[6px] ring-primary focus:ring-2 lg:hidden`}
               >
                 <span className="relative my-[6px] block h-[2px] w-[30px] bg-body-color dark:bg-white"></span>
                 <span className="relative my-[6px] block h-[2px] w-[30px] bg-body-color dark:bg-white"></span>
                 <span className="relative my-[6px] block h-[2px] w-[30px] bg-body-color dark:bg-white"></span>
               </button>
               <nav
-                className={`h-16 absolute right-4 top-full z-50 w-full max-w-[250px] rounded-lg bg-white py-5 shadow lg:static lg:block lg:w-full lg:max-w-full lg:bg-transparent lg:px-6 lg:py-0 lg:shadow-none ${
+                className={`h-16 absolute right-4 xl:-ml-[75%] top-full z-50 w-full lg:w-full max-w-[250px] rounded-lg bg-white py-5 shadow lg:static lg:block lg:max-w-full lg:bg-transparent lg:px-6 lg:py-0 lg:shadow-none ${
                   !open && "hidden"
                 } `}
               >
@@ -126,15 +127,16 @@ export default function Header() {
               </nav>
             </div>
             <div
-              className={` 
-              w-[60%] md:w-[60%] lg:w-[46%] flex md:justify-end lg:justify-end`}
+              // className={`
+              // w-[60%] md:w-[60%] lg:w-[46%] flex md:justify-end lg:justify-end`}
+              className="w-[90%] md:w-[50%] justify-end xl:w-[20%] flex xl:justify-end xl:-mr-[26%]"
             >
               <ThemeToggle />
             </div>
-            <div className="hidden justify-end pr-16 sm:flex lg:pr-0">
+            <div className="hidden justify-end pr-16 md:pr-8 sm:flex lg:pr-0 md:w-[42%] xl:w-[40%]">
               <Link
                 href="/#"
-                className="flex px-6 py-2.5 text-base text-dark hover:text-primary dark:text-white"
+                className="flex px-6 sm:px-0 md:px-4 lg:px-2 xl:px-2 sm:text-xs md:text-xs xl:text-base text-base md:justify-center items-center py-2.5  text-dark hover:text-primary dark:text-white "
               >
                 LOG IN
                 <ForwardArrowIcon />
@@ -142,7 +144,7 @@ export default function Header() {
 
               <Link
                 href="/#"
-                className="rounded-md bg-purple px-6 py-2.5 text-base text-white hover:bg-primary/90"
+                className="flex justify-center items-center rounded-md bg-purple px-6 sm:text-xs xl:text-base text-base sm:px-0 md:px-4 py-2.5  text-white hover:bg-primary/90"
               >
                 SIGN UP
               </Link>

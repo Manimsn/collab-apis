@@ -2,7 +2,7 @@ import React from "react";
 
 const Footer = () => {
   console.log("Public Footer Rendered");
-  return <div>Public Footer</div>;
+  return <div className="bg-red sm:bg-green md:bg-blue lg:bg-yellow xl:bg-purple 2xl-pink">Public Footer</div>;
 };
 
 // ✅ Export directly
