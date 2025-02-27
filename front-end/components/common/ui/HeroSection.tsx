@@ -5,7 +5,7 @@ import Link from "next/link";
 const HeroSection = () => {
   console.log("HeroSection-----------");
   return (
-    <section className="relative w-full bg-white py-8 md:py-12 lg:py-24 xl:py-16 dark:bg-dark ">
+    <section className="relative w-full bg-white py-8 md:py-12 lg:pt-24 lg:pb-16 dark:bg-dark ">
       <div className="container md:max-w-none xl:max-w-none">
         <div className="-mx-4 flex flex-wrap justify-center items-center space-y-6 md:space-y-6 lg:space-y-12">
           {/* w-full px-4 md:px-12 xl:px-0 lg:w-1/2 xl:w-5/12 */}
@@ -77,8 +77,8 @@ const HeroSection = () => {
               <Image
                 className={`object-cover object-center leading-10 dark:hidden animate-float`}
                 src="/images/header image.svg"
-                width={500}
-                height={500}
+                width={900}
+                height={900}
                 alt="Picture of the author"
                 priority
               />

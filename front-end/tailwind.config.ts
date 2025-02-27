@@ -25,6 +25,14 @@ export default {
         montserrat: ["Montserrat", "sans-serif"],
         inter: ["Inter", "sans-serif"],
       },
+      backgroundImage: {
+        "idcolab-image": "url('/images/background/custom3dBg.jpeg')",
+        "idcolab-land-image": "url('/images/background/team.jpg')",
+        "idcolab-nature-image": "url('/images/background/nature.jpg')",
+        "idcolab-claire-image": "url('/images/background/rachel-claire.jpg')",
+        // 'hero': "url('/assets/images/collection-background.svg')",
+        // 'card': "url('/assets/images/thumbnail-background.svg')",
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
