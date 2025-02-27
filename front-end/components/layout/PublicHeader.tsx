@@ -36,7 +36,6 @@ const Navbar8 = () => {
   ];
 
   return (
-    //bg-red sm:bg-green md:bg-blue lg:bg-yellow xl:bg-purple 2xl-pink
     <div className="fixed top-0 left-0 right-0 bg-light-1 z-50 dark:bg-dark-2">
       <header
         className={`flex w-full items-center bg-white dark:bg-dark-3 h-16

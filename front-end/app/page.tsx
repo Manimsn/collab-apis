@@ -2,30 +2,32 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
+//bg-red sm:bg-green md:bg-blue lg:bg-yellow xl:bg-purple 2xl-pink
 const Home = () => {
   return (
-    <section className="relative z-10 overflow-hidden bg-white py-20 lg:py-12 dark:bg-dark">
-      <div className="container xl:max-w-none xl:mx-12">
-        <div className="-mx-4 flex flex-wrap items-center">
-          <div className="w-full px-4 lg:w-1/2 xl:w-5/12">
+    <section className="relative w-full bg-white py-8 md:py-12 lg:py-16 dark:bg-dark ">
+      <div className="container md:max-w-none xl:max-w-none">
+        <div className="-mx-4 flex flex-wrap justify-center items-center space-y-6 md:space-y-6">
+          <div className="w-full px-4 md:px-12 lg:w-1/2 xl:w-5/12">
             <div className="items-center">
-              <div className="mb-12 w-full max-w-[752px] font-medium text-center text-2xl sm:text-5xl md:text-4xl lg:text-4xl">
+              <div className="mb-12 w-full max-w-[752px] font-medium text-left text-xl sm:text-1xl md:text-4xl lg:text-2xl xl:text-4xl">
                 <h2
-                  className={`font-clash w-full mb-5  !leading-[1.2] 
+                  className={`font-clash w-full mb-5 !leading-[1.2] 
                   text-dark dark:text-white`}
                 >
                   "Your Design Development Partner.
-                  <span className="md:-ml-48 lg:-ml-0 inline-block pt-2 md:pt-8">
-                    Real-Time Collaboration,
+                  <br />
+                  <span className="pt-4 inline-block ">
+                    Real-Time Collaboration,&nbsp;
                     <Image
                       src="/images/headerLine.svg"
                       width={500}
                       height={40}
                       alt=""
-                      className="-mt-2 pt-1 xxs:w-80 md:w-[300px] lg:w-[300px] 2xl:w-[410px] object-contain"
+                      className="w-40 lg:w-64 object-contain"
                     />
                   </span>
-                  <span className=" md:absolute lg:relative md:pl-2 md:pt-8 ">
+                  <span className="">
                     {/* <span className=" md:absolute md:pl-2md:pt-8 "> */}
                     Real Results."
                   </span>
@@ -36,7 +38,7 @@ const Home = () => {
                   with clients, share ideas, and make decisions in real-time.
                 </p>
               </div>
-              <div className="w-full mb-6 md:mx-12 lg:mx-0">
+              <div className="w-full mb-6 md:mx-0 lg:mx-0">
                 <form className="mt-10 sm:mt-5 w-full md:w-5/6 p-1 bg-light-3 rounded-lg dark:bg-dark-4">
                   <div className="flex ">
                     <label htmlFor="email-address" className="sr-only lg:pl-2">
@@ -78,8 +80,8 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="w-full px-4 lg:px-0 xl:px-4 lg:w-1/2 xl:w-7/12 ">
-            <div className="rounded-[20px] bg-white p-0 sm:p-[40px] lg:p-0 xl:ml-16 xl:p-[52px] dark:bg-dark">
+          <div className="w-full px-4 md:px-12  xl:px-4 md:w-full lg:w-1/2  ">
+            <div className="rounded-[20px] bg-white p-0 sm:p-[20px] lg:p-0 xl:ml-0 xl:p-[24px] dark:bg-dark">
               <Image
                 className={`object-cover object-center leading-10 dark:hidden animate-float`}
                 src="/images/header image.svg"
