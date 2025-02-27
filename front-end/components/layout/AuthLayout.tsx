@@ -46,9 +46,9 @@ export default function AuthLayout({
   ) : isAuthenticated ? (
     <>
       <PrivateHeader />
-      <div style={{ display: "flex" }}>
+      <div>
         <Sidebar />
-        <main style={{ flex: 1 }}>{children}</main>
+        <main>{children}</main>
       </div>
     </>
   ) : (
