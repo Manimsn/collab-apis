@@ -12,7 +12,7 @@ export default function PublicLayout({
   return (
     <>
       <PublicHeader />
-      <main>{children}</main>
+      <main className="mt-16">{children}</main>
       <Footer />
     </>
   );
