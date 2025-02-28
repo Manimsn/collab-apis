@@ -5,6 +5,7 @@ import WelcomeSection from "@/components/common/ui/WelcomeSection";
 import FeatureHighlights from "@/components/common/ui/FeatureHighlights";
 import OurMission from "@/components/common/ui/OurMission";
 import AllInOneSolution from "@/components/common/ui/AllInOneSolution";
+import HowItWorks from "@/components/common/ui/HowItWorks";
 
 const Home = () => {
   return (
@@ -14,6 +15,7 @@ const Home = () => {
       <FeatureHighlights />
       <OurMission />
       <AllInOneSolution />
+      <HowItWorks />
     </>
   );
 };
