@@ -18,6 +18,10 @@ const Home = () => {
       <HowItWorks />
     </>
   );
+
+  //   px
+  // px-16 pt-32 pb-40
+  // md:px-40 pt-48 pb-48
 };
 
 export default Home;
