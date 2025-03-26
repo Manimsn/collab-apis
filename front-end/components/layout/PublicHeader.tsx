@@ -19,7 +19,7 @@ const Navbar8 = () => {
     },
     {
       name: "CUSTOM 3D SERVICE",
-      href: "/customthreed",
+      href: "/custom-3d-modeling-service",
       isEnabled: true,
       subMenu: false,
     },

@@ -1,38 +1,33 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { persistReducer } from "redux-persist";
-import storage from "redux-persist/lib/storage";
 
-interface AuthState {
+
+// redux/slices/modelsSlice.ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+interface TokenState {
   accessToken: string | null;
-  refreshToken: string | null;
-  expiresAt: number | null;
+  tokenCreatedAt: number | null;
+  expiresIn: number | null;
 }
 
-const initialState: AuthState = {
+const initialState: TokenState = {
   accessToken: null,
-  refreshToken: null,
-  expiresAt: null,
+  tokenCreatedAt: null,
+  expiresIn: null,
 };
 
-const authSlice = createSlice({
-  name: "auth",
+const modelsSlice = createSlice({
+  name: 'auth',
   initialState,
   reducers: {
-    setTokens: (state, action: PayloadAction<AuthState>) => {
+    setToken(state, action: PayloadAction<{ accessToken: string; expiresIn: number }>) {
       state.accessToken = action.payload.accessToken;
-      state.refreshToken = action.payload.refreshToken;
-      state.expiresAt = action.payload.expiresAt;
-    },
-    logout: (state) => {
-      state.accessToken = null;
-      state.refreshToken = null;
-      state.expiresAt = null;
+      state.expiresIn = action.payload.expiresIn;
+      state.tokenCreatedAt = Date.now();
     },
   },
 });
 
-const persistConfig = { key: "auth", storage };
-const persistedAuthReducer = persistReducer(persistConfig, authSlice.reducer);
+export const { setToken } = modelsSlice.actions;
+export default modelsSlice.reducer;
 
-export const { setTokens, logout } = authSlice.actions;
-export default persistedAuthReducer;
+
