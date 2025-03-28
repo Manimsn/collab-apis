@@ -54,11 +54,6 @@ export default function Custom3DModelingService() {
     fetchToken();
   }, [isTokenExpired, dispatch, login]);
 
-  const { data, error, isLoading } = useGetModelsQuery(
-    { page, per_page: 10 },
-    { skip: !canFetch }
-  );
-
   return (
     <>
       <section className="relative z-10  py-0 dark:bg-dark lg:py-20">
@@ -98,7 +93,7 @@ export default function Custom3DModelingService() {
         </div>
       </section>
       <Checkout2 />
-      <div className="p-6">
+      {/* <div className="p-6">
         <h1 className="text-2xl font-semibold mb-4">3D Models</h1>
         {(isLoading || isLoggingIn) && (
           <div className="animate-pulse">Loading models...</div>
@@ -122,7 +117,7 @@ export default function Custom3DModelingService() {
             Load More
           </button>
         </div>
-      </div>
+      </div> */}
     </>
   );
 }
