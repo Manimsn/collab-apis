@@ -13,6 +13,7 @@ interface TokenState {
   tags?: string[];
   selectedTags?: string[];
   selectedOptions?: OptionType[];
+  searchParam: string;
 }
 
 const initialState: TokenState = {
@@ -22,6 +23,7 @@ const initialState: TokenState = {
   tags: undefined,
   selectedOptions: [],
   selectedTags: [],
+  searchParam: "",
 };
 
 const modelsSlice = createSlice({
@@ -45,9 +47,17 @@ const modelsSlice = createSlice({
     setSelectedOptions: (state, action: PayloadAction<OptionType[]>) => {
       state.selectedOptions = action.payload;
     },
+    setSearchParam: (state, action: PayloadAction<string>) => {
+      state.searchParam = action.payload;
+    },
   },
 });
 
-export const { setToken, setTags, setSelectedOptions, setSelectedTags } =
-  modelsSlice.actions;
+export const {
+  setToken,
+  setTags,
+  setSelectedOptions,
+  setSelectedTags,
+  setSearchParam,
+} = modelsSlice.actions;
 export default modelsSlice.reducer;
