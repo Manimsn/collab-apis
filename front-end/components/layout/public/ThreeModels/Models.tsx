@@ -114,7 +114,7 @@ export default function Models() {
         <div className="container">
           <ModelSearch />
 
-          <div className="-mx-4 flex flex-wrap min-h-[60vh]">
+          <div className="-mx-4 flex flex-wrap min-h-[60vh] h-[60vh]">
             {error && <p>Something went wrong.</p>}
 
             {isBusy ? (
@@ -152,13 +152,15 @@ export default function Models() {
           </div>
         </div>
       </section>
-      {isBusy || data?.filteredTotalModels !== 0 && (
-        <Pagination3
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={(newPage) => setPage(newPage)}
-        />
-      )}
+      <div className="min-h-[60px]">
+        {(!isBusy && data?.filteredTotalModels !== 0) && (
+          <Pagination3
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={(newPage) => setPage(newPage)}
+          />
+        )}
+      </div>
     </>
   );
 }
