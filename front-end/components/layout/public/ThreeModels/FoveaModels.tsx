@@ -17,14 +17,10 @@ export type OptionType = {
 
 const FoveaModels = () => {
   const dispatch = useDispatch();
-  const { tags, selectedOptions } = useSelector(
+  const [skeletonWidths, setSkeletonWidths] = useState<string[]>([]);
+  const { tags, selectedOptions, isLoggingIn, isModelsLoading } = useSelector(
     (state: RootState) => state.auth
   );
-
-  // Optional: defer render until client mounts (only for debugging)
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
 
   const handleChange = (selected: OptionType[]) => {
     const selectedValuesArray = selected.map((option) => option.value);
@@ -40,12 +36,23 @@ const FoveaModels = () => {
     ]);
   };
 
+  const isBusy = isLoggingIn || isModelsLoading;
+
+  useEffect(() => {
+    const values = [44, 52, 64, 72, 80, 96];
+    const widths = Array.from({ length: 40 }, () => {
+      const randomIndex = Math.floor(Math.random() * values.length);
+      return `w-[${values[randomIndex]}%]`;
+    });
+    setSkeletonWidths(widths);
+  }, []);
+
   return (
     <section className="bg-gray-2 pb-10 pt-20 dark:bg-dark lg:pb-20 lg:pt-0 overflow-y-scroll">
       <div className="container md:mx-12 md:px-0 md:max-w-[1820px]">
         <div className="-mx-4 flex flex-wrap">
           <div className="w-full px-4 lg:w-4/12 xl:w-3/12">
-            <div className="mb-10 overflow-hidden rounded-[10px] border border-stroke bg-white p-0 shadow-testimonial-6 dark:border-dark-3 dark:bg-dark-2 dark:shadow-box-dark md:h-[1060px] flex flex-col">
+            <div className="mb-10 overflow-hidden rounded-[10px] border border-stroke bg-white p-0 shadow-testimonial-6 dark:border-dark-3 dark:bg-dark-2 h-[800px] flex flex-col">
               {/* Sticky TagSearch */}
               <div className="mb-4 border-b border-stroke p-8 pt-0 pb-4 dark:border-dark-3 sticky top-0 bg-white dark:bg-dark-2 z-10">
                 <TagSearch
@@ -54,22 +61,36 @@ const FoveaModels = () => {
                 />
               </div>
 
-              {/* Scrollable tag list */}
-              {Array.isArray(tags) && tags.length > 0 ? (
-                <div className="flex flex-wrap gap-2 overflow-y-auto p-8 pt-0 h-full">
-                  {tags.map((tag: string, index: number) => (
-                    <BadgesItem
-                      key={index}
-                      handleTagClick={handleTagClick}
-                      tag={tag}
-                      roundedFull
-                      bgOpacity
-                    >
-                      {tag}
-                    </BadgesItem>
-                  ))}
-                </div>
-              ) : null}
+              {/* Scrollable content area */}
+              <div className="flex-1 overflow-y-auto p-8 pt-0">
+                {isBusy ? (
+                  <div className="flex flex-wrap gap-4">
+                    {skeletonWidths.length > 0 &&
+                      skeletonWidths.map((width, index) => (
+                        <span
+                          key={index}
+                          className={`${width} cursor-pointer flex min-w-[100px] mr-3 mb-3 whitespace-nowrap px-4 py-2 bg-gray-200 rounded-full capitalize text-dark-3 dark:text-light-3 text-xs animate-pulse`}
+                        >
+                          <div className="bg-gray-400 w-full rounded-lg h-4"></div>
+                        </span>
+                      ))}
+                  </div>
+                ) : Array.isArray(tags) && tags.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag: string, index: number) => (
+                      <BadgesItem
+                        key={index}
+                        handleTagClick={handleTagClick}
+                        tag={tag}
+                        roundedFull
+                        bgOpacity
+                      >
+                        {tag}
+                      </BadgesItem>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
 

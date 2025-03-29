@@ -14,6 +14,8 @@ interface TokenState {
   selectedTags?: string[];
   selectedOptions?: OptionType[];
   searchParam: string;
+  isLoggingIn: boolean;
+  isModelsLoading: boolean; // ← Add this
 }
 
 const initialState: TokenState = {
@@ -24,6 +26,8 @@ const initialState: TokenState = {
   selectedOptions: [],
   selectedTags: [],
   searchParam: "",
+  isLoggingIn: false,
+  isModelsLoading: false, // ← Add this
 };
 
 const modelsSlice = createSlice({
@@ -50,6 +54,12 @@ const modelsSlice = createSlice({
     setSearchParam: (state, action: PayloadAction<string>) => {
       state.searchParam = action.payload;
     },
+    setIsLoggingIn: (state, action: PayloadAction<boolean>) => {
+      state.isLoggingIn = action.payload;
+    },
+    setIsModelsLoading: (state, action: PayloadAction<boolean>) => {
+      state.isModelsLoading = action.payload;
+    },
   },
 });
 
@@ -59,5 +69,7 @@ export const {
   setSelectedOptions,
   setSelectedTags,
   setSearchParam,
+  setIsLoggingIn,
+  setIsModelsLoading,
 } = modelsSlice.actions;
 export default modelsSlice.reducer;

@@ -10,11 +10,14 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import {
+  setIsLoggingIn,
+  setIsModelsLoading,
   setSearchParam,
   setTags,
   setToken,
 } from "@/redux/slices/foveaAuthSlice";
 import Link from "next/link";
+import Skeleton2 from "./Skeleton";
 
 export default function Models() {
   const dispatch = useDispatch();
@@ -29,7 +32,13 @@ export default function Models() {
   const [page, setPage] = useState(1);
   const [canFetch, setCanFetch] = useState(false);
   const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+
   const perPage = 15;
+  const tagParam =
+    selectedTags && selectedTags.length > 0
+      ? { tags: selectedTags.join(",") }
+      : {};
+  const searchPara = searchParam !== "" ? { search: searchParam } : {};
 
   const isTokenExpired =
     !accessToken ||
@@ -44,6 +53,7 @@ export default function Models() {
 
     const fetchToken = async () => {
       try {
+        dispatch(setIsLoggingIn(true));
         const data = await login().unwrap();
         // console.log("Custom3DModelingService-----------------", data);
         if (data?.access_token && data?.expires_in) {
@@ -57,24 +67,29 @@ export default function Models() {
         }
       } catch (err) {
         console.error("Login error:", err);
+      } finally {
+        dispatch(setIsLoggingIn(false));
       }
     };
 
     fetchToken();
   }, [isTokenExpired, dispatch, login]);
 
-  const tagParam =
-    selectedTags && selectedTags.length > 0
-      ? { tags: selectedTags.join(",") }
-      : {};
-
-  const searchPara = searchParam !== "" ? { search: searchParam } : {};
-
   const { data, error, isLoading } = useGetModelsQuery(
-    { page, per_page: perPage, ...tagParam, ...searchPara },
+    {
+      page,
+      per_page: perPage,
+      ...tagParam,
+      ...searchPara,
+      order_by: "CREATED_NEW_TO_OLD",
+    },
     { skip: !canFetch }
   );
   const isBusy = isLoading || isLoggingIn;
+
+  useEffect(() => {
+    dispatch(setIsModelsLoading(isLoading));
+  }, [isLoading, dispatch]);
 
   useEffect(() => {
     if (
@@ -92,7 +107,6 @@ export default function Models() {
   }, [selectedTags]);
 
   const totalPages = Math.ceil((data?.filteredTotalModels || 0) / perPage); // Make sure your API returns `total`
-  console.log("Models---------", data);
 
   return (
     <>
@@ -100,11 +114,17 @@ export default function Models() {
         <div className="container">
           <ModelSearch />
 
-          <div className="-mx-4 flex flex-wrap">
+          <div className="-mx-4 flex flex-wrap min-h-[60vh]">
             {error && <p>Something went wrong.</p>}
 
             {isBusy ? (
-              <p>Loading...</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 auto-rows-fr xl:h-full">
+                {Array(15)
+                  .fill(null)
+                  .map((model, index) => (
+                    <Skeleton2 key={index} />
+                  ))}
+              </div>
             ) : Array.isArray(data?.models) && data.models.length > 0 ? (
               data.models.map((model: any, index: number) => (
                 <BlogItem
@@ -115,7 +135,7 @@ export default function Models() {
                 />
               ))
             ) : (
-              <div className="w-screen h-[80vh] flex flex-col justify-center items-center text-center lg:text-xl text-sm text-dark-5 dark:text-light-3">
+              <div className="w-screen h-[60vh] flex flex-col justify-center items-center text-center lg:text-xl text-sm text-dark-5 dark:text-light-3">
                 <div className="text-[80px] lg:text-[150px] text-dark-4 dark:text-light-3 mt-28 md:mt-0 mb-20">
                   ㋛
                 </div>
@@ -132,7 +152,7 @@ export default function Models() {
           </div>
         </div>
       </section>
-      {data?.filteredTotalModels !== 0 && (
+      {isBusy || data?.filteredTotalModels !== 0 && (
         <Pagination3
           currentPage={page}
           totalPages={totalPages}
@@ -146,8 +166,8 @@ export default function Models() {
 function BlogItem({ title, image, freeKey }: any) {
   return (
     <div className="w-full px-4 md:w-1/2 lg:w-1/5">
-      <div className="group mb-4 rounded-lg border border-stroke p-1 dark:border-dark-3">
-        <div className="mb-2 overflow-hidden rounded relative">
+      <div className="group rounded-lg border border-stroke p-1 dark:border-dark-3">
+        <div className=" overflow-hidden rounded relative">
           {freeKey && (
             <span className="absolute top-1 right-2 bg-purple text-light-1 text-[10px] px-1.5 py-0.5 rounded z-10">
               FREE

@@ -1,3 +1,4 @@
+"use client";
 import Select, {
   components,
   ControlProps,
@@ -9,6 +10,7 @@ import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 
 export type OptionType = {
   value: string;
@@ -16,12 +18,19 @@ export type OptionType = {
 };
 
 const MultiSelectTags = ({ handleChange, selectedOptions }: any) => {
+  const [mounted, setMounted] = useState(false);
   const { tags } = useSelector((state: RootState) => state.auth);
 
   // Prepare options for the Select component
   const options: OptionType[] = Array.isArray(tags)
     ? tags.map((tag: any) => ({ value: tag, label: tag }))
     : [];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <Select
@@ -39,7 +48,6 @@ const MultiSelectTags = ({ handleChange, selectedOptions }: any) => {
       }}
       options={options}
       placeholder="Search..."
-      classNamePrefix="select-tags"
       className="w-[93%] mx-auto select-tags !mt-5"
     />
   );
