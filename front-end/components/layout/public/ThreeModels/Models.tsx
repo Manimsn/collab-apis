@@ -103,19 +103,6 @@ export default function Models() {
           <div className="-mx-4 flex flex-wrap">
             {error && <p>Something went wrong.</p>}
 
-            {/* {isBusy ? (
-              <p>Loading...</p>
-            ) : (
-              Array.isArray(data?.models) &&
-              data?.models?.map((model: any, index: number) => (
-                <BlogItem
-                  key={model.id || index} // use model.id if unique, fallback to index
-                  image={`https://cdn.archvision.services/public/service.thumbnail-cache/${model?.rpc_guid}.rpc.png`}
-                  title={model.title}
-                  freeKey={model.tags?.includes("FREE") ? true : false}
-                />
-              ))
-            )} */}
             {isBusy ? (
               <p>Loading...</p>
             ) : Array.isArray(data?.models) && data.models.length > 0 ? (
@@ -158,11 +145,11 @@ export default function Models() {
 
 function BlogItem({ title, image, freeKey }: any) {
   return (
-    <div className="w-full px-4 md:w-1/2 lg:w-1/5 ">
-      <div className="group mb-8 rounded-lg border border-stroke p-2 dark:border-dark-3">
+    <div className="w-full px-4 md:w-1/2 lg:w-1/5">
+      <div className="group mb-4 rounded-lg border border-stroke p-1 dark:border-dark-3">
         <div className="mb-2 overflow-hidden rounded relative">
           {freeKey && (
-            <span className="absolute top-0 right-2 bg-purple text-light-1 text-xs px-2 py-1 rounded z-10">
+            <span className="absolute top-1 right-2 bg-purple text-light-1 text-[10px] px-1.5 py-0.5 rounded z-10">
               FREE
             </span>
           )}
@@ -171,16 +158,16 @@ function BlogItem({ title, image, freeKey }: any) {
             src={image}
             alt={title}
             width={200}
-            height={200}
-            className="max-h-full w-auto object-contain duration-200 group-hover:rotate-6 group-hover:scale-125"
+            height={120}
+            className="max-h-32 max-w-full object-contain duration-200 group-hover:rotate-6 group-hover:scale-125"
           />
         </div>
 
-        <div className="h-12 flex items-center justify-center relative group">
-          <h1 className="truncate text-nowrap dark:text-light-3 max-w-full px-2">
+        <div className="h-10 flex items-center justify-center relative group">
+          <h1 className="truncate text-nowrap dark:text-light-3 max-w-full px-2 text-sm">
             {title}
           </h1>
-          <div className="absolute left-1/2 top-full z-20 -translate-x-1/2 whitespace-nowrap rounded border border-light bg-white px-4 py-[6px] text-sm font-semibold text-body-color opacity-0 group-hover:opacity-100 dark:border-dark-3 dark:bg-dark dark:text-dark-6">
+          <div className="absolute left-1/2 top-full z-20 -translate-x-1/2 whitespace-nowrap rounded border border-light bg-white px-3 py-1 text-xs font-medium text-body-color opacity-0 group-hover:opacity-100 dark:border-dark-3 dark:bg-dark dark:text-dark-6">
             {title}
           </div>
         </div>
