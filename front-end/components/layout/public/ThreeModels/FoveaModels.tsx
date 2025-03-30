@@ -18,9 +18,13 @@ export type OptionType = {
 const FoveaModels = () => {
   const dispatch = useDispatch();
   const [skeletonWidths, setSkeletonWidths] = useState<string[]>([]);
-  const { tags, selectedOptions, isLoggingIn, isModelsLoading } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const {
+    tags,
+    selectedOptions,
+    isLoggingIn,
+    isModelsLoading,
+    selectedTags = [],
+  } = useSelector((state: RootState) => state.auth);
 
   const handleChange = (selected: OptionType[]) => {
     const selectedValuesArray = selected.map((option) => option.value);
@@ -77,17 +81,22 @@ const FoveaModels = () => {
                   </div>
                 ) : Array.isArray(tags) && tags.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {tags.map((tag: string, index: number) => (
-                      <BadgesItem
-                        key={index}
-                        handleTagClick={handleTagClick}
-                        tag={tag}
-                        roundedFull
-                        bgOpacity
-                      >
-                        {tag}
-                      </BadgesItem>
-                    ))}
+                    {tags.map((tag: string, index: number) => {
+                      const isDisabled = selectedTags.includes(tag);
+
+                      return (
+                        <BadgesItem
+                          key={index}
+                          handleTagClick={handleTagClick}
+                          tag={tag}
+                          isDisabled={isDisabled}
+                          roundedFull
+                          bgOpacity
+                        >
+                          {tag}
+                        </BadgesItem>
+                      );
+                    })}
                   </div>
                 ) : null}
               </div>
@@ -111,6 +120,7 @@ const BadgesItem = ({
   children,
   handleTagClick,
   tag,
+  isDisabled = false,
   outline,
   roundedFull,
   roundedLg,
@@ -121,8 +131,16 @@ const BadgesItem = ({
 }: any) => {
   return (
     <span
-      onClick={() => handleTagClick(tag)}
+      // onClick={() => handleTagClick(tag)}
+      onClick={() => {
+        if (!isDisabled) handleTagClick(tag);
+      }}
       className={`cursor-pointer inline-block rounded py-1 px-2.5 text-xs font-medium ${
+        isDisabled
+          ? "cursor-not-allowed opacity-50"
+          : "cursor-pointer hover:opacity-80"
+      }
+      ${
         outline
           ? `border ${
               (roundedFull && `rounded-full`) ||

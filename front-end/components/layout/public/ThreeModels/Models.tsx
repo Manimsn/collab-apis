@@ -307,7 +307,6 @@ const ModelSearch = () => {
         <Link
           href="https://archvision.com/fovea/"
           target="_black"
-          // className="dark:hidden"
         >
           <Image
             src={
