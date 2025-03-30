@@ -121,7 +121,7 @@ export default function Models() {
       searchParams,
     });
 
-    router.replace(`/custom-3d-modeling-service?${queryString}`, {
+    router.replace(`/3d-models-interior-design?${queryString}`, {
       scroll: false,
     });
   }, [safeSelectedTags, safeSearchParam]);
@@ -152,6 +152,7 @@ export default function Models() {
                   image={`https://cdn.archvision.services/public/service.thumbnail-cache/${model?.rpc_guid}.rpc.png`}
                   title={model.title}
                   freeKey={model.tags?.includes("FREE") ? true : false}
+                  rpcId={model?.rpc_guid}
                 />
               ))
             ) : (
@@ -186,7 +187,7 @@ export default function Models() {
                 searchParams,
               });
 
-              router.push(`/custom-3d-modeling-service?${queryString}`, {
+              router.push(`/3d-models-interior-design?${queryString}`, {
                 scroll: false,
               });
             }}
@@ -197,34 +198,36 @@ export default function Models() {
   );
 }
 
-function BlogItem({ title, image, freeKey }: any) {
+function BlogItem({ title, image, freeKey, rpcId }: any) {
   return (
     <div className="w-full px-4 md:w-1/2 lg:w-1/5">
       <div className="group rounded-lg border border-stroke p-2 dark:border-dark-3">
-        <div className=" overflow-hidden rounded relative">
-          {freeKey && (
-            <span className="absolute top-1 right-2 bg-purple text-light-1 text-[10px] px-1.5 py-0.5 rounded z-10">
-              FREE
-            </span>
-          )}
+        <Link href={`/3d-models-interior-design/${rpcId}}`}>
+          <div className=" overflow-hidden rounded relative">
+            {freeKey && (
+              <span className="absolute top-1 right-2 bg-purple text-light-1 text-[10px] px-1.5 py-0.5 rounded z-10">
+                FREE
+              </span>
+            )}
 
-          <Image
-            src={image}
-            alt={title}
-            width={200}
-            height={120}
-            className="max-h-32 min-w-full object-contain duration-200 group-hover:rotate-6 group-hover:scale-125"
-          />
-        </div>
-
-        <div className="h-6 flex items-center justify-center relative group">
-          <h1 className="truncate text-nowrap dark:text-light-3 max-w-full px-2 text-sm">
-            {title}
-          </h1>
-          <div className="absolute left-1/2 top-full z-20 -translate-x-1/2 whitespace-nowrap rounded border border-light bg-white px-3 py-1 text-base font-bold text-body-color opacity-0 group-hover:opacity-100 dark:border-dark-3 dark:bg-dark dark:text-dark-6">
-            {title}
+            <Image
+              src={image}
+              alt={title}
+              width={200}
+              height={120}
+              className="max-h-32 min-w-full object-contain duration-200 group-hover:rotate-6 group-hover:scale-125"
+            />
           </div>
-        </div>
+
+          <div className="h-6 flex items-center justify-center relative group">
+            <h1 className="truncate text-nowrap dark:text-light-3 max-w-full px-2 text-sm">
+              {title}
+            </h1>
+            <div className="absolute left-1/2 top-full z-20 -translate-x-1/2 whitespace-nowrap rounded border border-light bg-white px-3 py-1 text-base font-bold text-body-color opacity-0 group-hover:opacity-100 dark:border-dark-3 dark:bg-dark dark:text-dark-6">
+              {title}
+            </div>
+          </div>
+        </Link>
       </div>
     </div>
   );

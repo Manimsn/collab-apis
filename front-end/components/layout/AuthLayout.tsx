@@ -33,7 +33,7 @@ export default function AuthLayout({
 
   // Array of regex patterns for dynamic public routes
   const dynamicPublicRoutes = [
-    /^\/3d-model-viewer-online(\/[\w-]+)?$/, // Matches /3d-model-viewer-online and /3d-model-viewer-online/randomUUID
+    /^\/3d-models-interior-design(\/[\w-%]+)?$/, // updated regex to allow UUIDs and encoded characters like %7D
   ];
 
   // Check if the current page should use the public layout

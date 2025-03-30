@@ -13,7 +13,7 @@ const Navbar8 = () => {
   const navigation = [
     {
       name: "3D MODELS",
-      href: "/ThreeDmodels?page=1",
+      href: "/3d-models-interior-design",
       isEnabled: true,
       subMenu: false,
     },
