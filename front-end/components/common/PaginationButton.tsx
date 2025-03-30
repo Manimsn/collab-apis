@@ -19,11 +19,11 @@ export const PaginationButton = ({
       onClick={onClick}
       disabled={disabled}
       className={`flex h-10 min-w-10 items-center justify-center px-2 text-base font-medium border-r border-stroke 
-        hover:bg-gray-2 dark:border-white/10 dark:hover:bg-white/5
+        hover:bg-purple hover:text-white dark:border-white/10 
         ${disabled ? "opacity-50 cursor-not-allowed text-dark" : ""}
         ${
           isActive
-            ? "bg-purple text-white dark:bg-white/10 font-bold"
+            ? "bg-purple text-white font-bold hover:bg-purple/100"
             : "text-dark dark:text-white"
         }`}
     >

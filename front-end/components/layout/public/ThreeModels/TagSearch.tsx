@@ -39,7 +39,7 @@ const MultiSelectTags = ({ handleChange, selectedOptions }: any) => {
       onChange={handleChange}
       components={{
         DropdownIndicator: () => (
-          <MagnifyingGlassIcon className="w-5 h-5 dark:text-light-2 ml-2 mx-2" />
+          <MagnifyingGlassIcon className="w-5 h-5  ml-2 mx-2" />
         ),
         Control,
         IndicatorSeparator: () => null,
@@ -60,7 +60,7 @@ const Control = ({ children, ...props }: ControlProps<any, true>) => (
     {...props}
     className="!border-none focus:border-none focus:ring-0 focus:outline-none"
   >
-    <div className="px-2 mr flex items-center text-sm font-medium text-center dark:text-light-2">
+    <div className="px-2 mr flex items-center text-sm font-medium text-center ">
       Tags
     </div>
     {children}

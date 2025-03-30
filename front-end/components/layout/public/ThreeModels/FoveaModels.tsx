@@ -52,8 +52,8 @@ const FoveaModels = () => {
   }, []);
 
   return (
-    <section className="bg-gray-2 pb-10 pt-20 dark:bg-dark lg:pb-20 lg:pt-0 overflow-y-scroll">
-      <div className="container md:mx-12 md:px-0 md:max-w-[1820px]">
+    <section className="bg-gray-2 pb-10 pt-20 dark:bg-dark lg:pb-20 lg:pt-0 overflow-y-scroll">      
+      <div className="container mx-auto max-w-full px-4 md:px-0 xl:max-w-[1820px]">
         <div className="-mx-4 flex flex-wrap">
           <div className="w-full px-4 lg:w-4/12 xl:w-3/12">
             <div className="mb-10 overflow-hidden rounded-[10px] border border-stroke bg-white p-0 shadow-testimonial-6 dark:border-dark-3 dark:bg-dark-2 h-[800px] flex flex-col">

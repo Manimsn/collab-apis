@@ -19,6 +19,8 @@ import {
 import Link from "next/link";
 import Skeleton2 from "./Skeleton";
 import { useRouter, useSearchParams } from "next/navigation";
+import { buildURLWithParams } from "@/utils/urlHelpers";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 export default function Models() {
   const dispatch = useDispatch();
@@ -110,34 +112,16 @@ export default function Models() {
     }
   }, [data?.tags, tags, dispatch]);
 
-  // useEffect(() => {
-  //   // setPage(1);
-  //   const params = new URLSearchParams(searchParams.toString());
-  //   params.set("page", "1");
-  //   router.push(`/custom-3d-modeling-service?${params.toString()}`, {
-  //     scroll: false,
-  //   });
-  // }, [selectedTags]);
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const queryString = buildURLWithParams({
+      page: 1,
+      perPage,
+      selectedTags: safeSelectedTags,
+      searchParam: safeSearchParam,
+      searchParams,
+    });
 
-    params.set("page", "1");
-    params.set("per_page", perPage.toString());
-    params.set("order_by", "CREATED_NEW_TO_OLD");
-
-    if (safeSelectedTags.length) {
-      params.set("tags", safeSelectedTags.join(","));
-    } else {
-      params.delete("tags");
-    }
-
-    if (safeSearchParam) {
-      params.set("search", safeSearchParam);
-    } else {
-      params.delete("search");
-    }
-
-    router.replace(`/custom-3d-modeling-service?${params.toString()}`, {
+    router.replace(`/custom-3d-modeling-service?${queryString}`, {
       scroll: false,
     });
   }, [safeSelectedTags, safeSearchParam]);
@@ -193,27 +177,16 @@ export default function Models() {
           <Pagination3
             currentPage={page}
             totalPages={totalPages}
-            // onPageChange={(newPage) => setPage(newPage)}
             onPageChange={(newPage) => {
-              const params = new URLSearchParams(searchParams.toString());
-              params.set("page", newPage.toString());
-              params.set("per_page", perPage.toString());
-              params.set("order_by", "CREATED_NEW_TO_OLD");
+              const queryString = buildURLWithParams({
+                page: newPage,
+                perPage,
+                selectedTags,
+                searchParam,
+                searchParams,
+              });
 
-              if (selectedTags?.length) {
-                params.set("tags", selectedTags.join(","));
-              } else {
-                params.delete("tags");
-              }
-
-              if (searchParam) {
-                params.set("search", searchParam);
-              } else {
-                params.delete("search");
-              }
-
-              // router.replace(`/custom-3d-modeling-service?${params.toString()}`);
-              router.push(`/custom-3d-modeling-service?${params.toString()}`, {
+              router.push(`/custom-3d-modeling-service?${queryString}`, {
                 scroll: false,
               });
             }}
@@ -284,30 +257,14 @@ const ModelSearch = () => {
             type="button"
             className="absolute inset-y-0 end-0 flex items-center pe-3"
           >
-            <svg
-              className="w-4 h-4 me-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 20 20"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-              />
-            </svg>
+            {/* <SearchIcon /> */}
+            <MagnifyingGlassIcon className="w-5 h-5 dark:text-light-2 ml-2 mx-2" />
           </button>
         </div>
       </form>
       <div className="flex items-center gap-4 relative min-w-48">
         <p className="dark:text-light-3 text-sm">Powered by </p>
-        <Link
-          href="https://archvision.com/fovea/"
-          target="_black"
-        >
+        <Link href="https://archvision.com/fovea/" target="_black">
           <Image
             src={
               theme === "light"
