@@ -18,6 +18,7 @@ import {
 } from "@/redux/slices/foveaAuthSlice";
 import Link from "next/link";
 import Skeleton2 from "./Skeleton";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Models() {
   const dispatch = useDispatch();
@@ -29,7 +30,12 @@ export default function Models() {
     selectedTags,
     searchParam,
   } = useSelector((state: RootState) => state.auth);
-  const [page, setPage] = useState(1);
+  // const [page, setPage] = useState(1);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const page = parseInt(searchParams.get("page") || "1", 10);
+
   const [canFetch, setCanFetch] = useState(false);
   const [login, { isLoading: isLoggingIn }] = useLoginMutation();
 
@@ -86,6 +92,8 @@ export default function Models() {
     { skip: !canFetch }
   );
   const isBusy = isLoading || isLoggingIn;
+  const safeSelectedTags = selectedTags ?? [];
+  const safeSearchParam = searchParam ?? "";
 
   useEffect(() => {
     dispatch(setIsModelsLoading(isLoading));
@@ -102,9 +110,37 @@ export default function Models() {
     }
   }, [data?.tags, tags, dispatch]);
 
+  // useEffect(() => {
+  //   // setPage(1);
+  //   const params = new URLSearchParams(searchParams.toString());
+  //   params.set("page", "1");
+  //   router.push(`/custom-3d-modeling-service?${params.toString()}`, {
+  //     scroll: false,
+  //   });
+  // }, [selectedTags]);
   useEffect(() => {
-    setPage(1);
-  }, [selectedTags]);
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("page", "1");
+    params.set("per_page", perPage.toString());
+    params.set("order_by", "CREATED_NEW_TO_OLD");
+
+    if (safeSelectedTags.length) {
+      params.set("tags", safeSelectedTags.join(","));
+    } else {
+      params.delete("tags");
+    }
+
+    if (safeSearchParam) {
+      params.set("search", safeSearchParam);
+    } else {
+      params.delete("search");
+    }
+
+    router.replace(`/custom-3d-modeling-service?${params.toString()}`, {
+      scroll: false,
+    });
+  }, [safeSelectedTags, safeSearchParam]);
 
   const totalPages = Math.ceil((data?.filteredTotalModels || 0) / perPage); // Make sure your API returns `total`
 
@@ -153,11 +189,34 @@ export default function Models() {
         </div>
       </section>
       <div className="min-h-[60px]">
-        {(!isBusy && data?.filteredTotalModels !== 0) && (
+        {!isBusy && data?.filteredTotalModels !== 0 && (
           <Pagination3
             currentPage={page}
             totalPages={totalPages}
-            onPageChange={(newPage) => setPage(newPage)}
+            // onPageChange={(newPage) => setPage(newPage)}
+            onPageChange={(newPage) => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("page", newPage.toString());
+              params.set("per_page", perPage.toString());
+              params.set("order_by", "CREATED_NEW_TO_OLD");
+
+              if (selectedTags?.length) {
+                params.set("tags", selectedTags.join(","));
+              } else {
+                params.delete("tags");
+              }
+
+              if (searchParam) {
+                params.set("search", searchParam);
+              } else {
+                params.delete("search");
+              }
+
+              // router.replace(`/custom-3d-modeling-service?${params.toString()}`);
+              router.push(`/custom-3d-modeling-service?${params.toString()}`, {
+                scroll: false,
+              });
+            }}
           />
         )}
       </div>
