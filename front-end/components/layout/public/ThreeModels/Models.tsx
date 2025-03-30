@@ -200,7 +200,7 @@ export default function Models() {
 function BlogItem({ title, image, freeKey }: any) {
   return (
     <div className="w-full px-4 md:w-1/2 lg:w-1/5">
-      <div className="group rounded-lg border border-stroke p-1 dark:border-dark-3">
+      <div className="group rounded-lg border border-stroke p-2 dark:border-dark-3">
         <div className=" overflow-hidden rounded relative">
           {freeKey && (
             <span className="absolute top-1 right-2 bg-purple text-light-1 text-[10px] px-1.5 py-0.5 rounded z-10">
@@ -213,15 +213,15 @@ function BlogItem({ title, image, freeKey }: any) {
             alt={title}
             width={200}
             height={120}
-            className="max-h-32 max-w-full object-contain duration-200 group-hover:rotate-6 group-hover:scale-125"
+            className="max-h-32 min-w-full object-contain duration-200 group-hover:rotate-6 group-hover:scale-125"
           />
         </div>
 
-        <div className="h-10 flex items-center justify-center relative group">
+        <div className="h-6 flex items-center justify-center relative group">
           <h1 className="truncate text-nowrap dark:text-light-3 max-w-full px-2 text-sm">
             {title}
           </h1>
-          <div className="absolute left-1/2 top-full z-20 -translate-x-1/2 whitespace-nowrap rounded border border-light bg-white px-3 py-1 text-xs font-medium text-body-color opacity-0 group-hover:opacity-100 dark:border-dark-3 dark:bg-dark dark:text-dark-6">
+          <div className="absolute left-1/2 top-full z-20 -translate-x-1/2 whitespace-nowrap rounded border border-light bg-white px-3 py-1 text-base font-bold text-body-color opacity-0 group-hover:opacity-100 dark:border-dark-3 dark:bg-dark dark:text-dark-6">
             {title}
           </div>
         </div>
