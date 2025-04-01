@@ -40,7 +40,13 @@ export const modelsApi = createApi({
         params,
       }),
     }),
+    getThreeModels: builder.query({
+      query: ({ rpcId, format = "GLTF" }) => ({
+        url: `/models/${rpcId}/download/${format}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useGetModelsQuery } = modelsApi;
+export const { useLoginMutation, useGetModelsQuery, useGetThreeModelsQuery } = modelsApi;
